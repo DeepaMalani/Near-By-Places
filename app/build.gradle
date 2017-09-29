@@ -1,0 +1,82 @@
+apply plugin: 'com.android.application'
+
+android {
+    signingConfigs {
+        config {
+            storeFile file("$rootDir/keystore.jks")
+            keyAlias 'NearBy Places'
+            keyPassword 'mypassword'
+            storePassword 'myapppassword'
+        }
+    }
+    compileSdkVersion 25
+    buildToolsVersion '25.0.0'
+    defaultConfig {
+        applicationId "com.example.android.nearbyplaces"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+    }
+    buildTypes.each {
+        it.buildConfigField "String", 'places_api_key', "\"AIzaSyBJmJCow2-4xd2GXYBCIoKtvNX7G2JkvGk\""
+        // it.buildConfigField "String", 'places_api_key', "\"AIzaSyBR5WLfivo5UDfhrwF_mQ0nk2MMG8f0Brk\""
+    }
+}
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-contrib:2.2.1') {
+        // Necessary to avoid version conflicts
+        exclude group: 'com.android.support', module: 'appcompat'
+        exclude group: 'com.android.support', module: 'support-v4'
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude module: 'recyclerview-v7'
+    }
+
+    //Place types java library
+    compile project(':placetypesources')
+
+
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:design:25.2.0'
+    // RecyclerView library
+    compile 'com.android.support:recyclerview-v7:25.3.1'
+    // CardView library
+    compile 'com.android.support:cardview-v7:25.3.1'
+    //Picasso library
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    //Google play service location /
+    compile 'com.google.android.gms:play-services-location:11.0.4'
+    //compile 'com.google.android.gms:play-services-places:11.0.4'
+    //Google Play service library
+    // compile 'com.google.android.gms:play-services:11.0.4'
+
+    //Butterknife library for views
+    compile 'com.jakewharton:butterknife:8.6.0'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
+    //Google play service ad library
+    compile 'com.google.android.gms:play-services-ads:11.0.4'
+
+    testCompile 'junit:junit:4.12'
+    annotationProcessor 'net.simonvt.schematic:schematic-compiler:0.6.3'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
+    androidTestCompile 'com.android.support:support-annotations:25.3.1'
+    // dependencies required to use Espresso-Intents
+    androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2.2'
+    androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile 'com.android.support.test:runner:0.5'
+}

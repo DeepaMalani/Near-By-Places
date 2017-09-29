@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--<string-array name="places_title_array">-->
+    <!--<item>Atm</item>-->
+    <!--<item>Bakery</item>-->
+    <!--<item>Bank</item>-->
+    <!--<item>Bar</item>-->
+    <!--<item>Bus station</item>-->
+    <!--<item>Cafe</item>-->
+    <!--<item>Church</item>-->
+    <!--<item>Gas station</item>-->
+    <!--<item>Gym</item>-->
+    <!--<item>Library</item>-->
+    <!--<item>Mall</item>-->
+    <!--<item>Theater</item>-->
+    <!--<item>Park</item>-->
+    <!--<item>Pharmacy</item>-->
+    <!--<item>Restaurant</item>-->
+    <!--<item>School</item>-->
+
+    <!--</string-array>-->
+
+    <!--<string-array name="places_value_array">-->
+
+    <!--<item>atm</item>-->
+    <!--<item>bakery</item>-->
+    <!--<item>bank</item>-->
+    <!--<item>bar</item>-->
+    <!--<item>bus_station</item>-->
+    <!--<item>cafe</item>-->
+    <!--<item>church</item>-->
+    <!--<item>gas_station</item>-->
+    <!--<item>gym</item>-->
+    <!--<item>library</item>-->
+    <!--<item>shopping_mall</item>-->
+    <!--<item>movie_theater</item>-->
+    <!--<item>park</item>-->
+    <!--<item>pharmacy</item>-->
+    <!--<item>restaurant</item>-->
+    <!--<item>school</item>-->
+
+    <!--</string-array>-->
+
+    <integer-array name="places_icon_array">
+
+        <item>@drawable/ic_atm</item>
+        <item>@drawable/ic_bakery</item>
+        <item>@drawable/ic_bank</item>
+        <item>@drawable/ic_local_bar</item>
+        <item>@drawable/ic_bus</item>
+        <item>@drawable/ic_local_cafe</item>
+        <item>@drawable/ic_church</item>
+        <item>@drawable/ic_local_gas_station</item>
+        <item>@drawable/ic_gym</item>
+        <item>@drawable/ic_local_library</item>
+        <item>@drawable/ic_local_mall</item>
+        <item>@drawable/ic_local_movies</item>
+        <item>@drawable/ic_park</item>
+        <item>@drawable/ic_local_pharmacy</item>
+        <item>@drawable/ic_restaurant</item>
+        <item>@drawable/ic_school</item>
+
+
+    </integer-array>
+</resources>
