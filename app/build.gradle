@@ -3,16 +3,16 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         config {
-            storeFile file("$rootDir/keystore.jks")
-            keyAlias 'NearBy Places'
-            keyPassword 'mypassword'
-            storePassword 'myapppassword'
+            storeFile file('C:/Users/Deep/AndroidStudioProjects/NearByPlaces/keystore1.jks')
+            keyAlias 'nearbyplaces'
+            keyPassword 'nearbypassword'
+            storePassword 'nearby'
         }
     }
     compileSdkVersion 25
-    buildToolsVersion '25.0.0'
+    buildToolsVersion '25.0.3'
     defaultConfig {
-        applicationId "com.example.android.nearbyplaces"
+        applicationId "myapp.nearby.android.nearbyplaces"
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1
@@ -45,13 +45,10 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude module: 'recyclerview-v7'
     }
-
     //Place types java library
     compile project(':placetypesources')
-
-
     compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:design:25.2.0'
+    compile 'com.android.support:design:25.3.1'
     // RecyclerView library
     compile 'com.android.support:recyclerview-v7:25.3.1'
     // CardView library
@@ -60,17 +57,11 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
     //Google play service location /
     compile 'com.google.android.gms:play-services-location:11.0.4'
-    //compile 'com.google.android.gms:play-services-places:11.0.4'
-    //Google Play service library
-    // compile 'com.google.android.gms:play-services:11.0.4'
-
     //Butterknife library for views
     compile 'com.jakewharton:butterknife:8.6.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-
     //Google play service ad library
-    compile 'com.google.android.gms:play-services-ads:11.0.4'
-
+   // compile 'com.google.android.gms:play-services-ads:11.0.4'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'net.simonvt.schematic:schematic-compiler:0.6.3'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
