@@ -1,14 +1,13 @@
-package com.example.android.nearbyplaces.utilities;
+package myapp.nearby.android.nearbyplaces.utilities;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.util.Log;
-
-import com.example.android.nearbyplaces.data.PlacesContract;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import myapp.nearby.android.nearbyplaces.data.PlacesContract;
 
 /**
  * Created by Deep on 9/5/2017.
@@ -94,10 +93,10 @@ public class OpenPlaceDetailsJsonUtils {
 
             //Insert data into database
             context.getContentResolver().insert(PlacesContract.PlaceDetailEntry.CONTENT_URI, placeDetailContentValue);
-            Log.d(TAG, "Data inserted successfully");
+
 
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
+           // Log.e(TAG, e.getMessage(), e);
             e.printStackTrace();
         }
 

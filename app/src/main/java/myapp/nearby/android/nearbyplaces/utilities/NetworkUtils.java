@@ -1,12 +1,9 @@
-package com.example.android.nearbyplaces.utilities;
+package myapp.nearby.android.nearbyplaces.utilities;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.util.Log;
-
-import com.example.android.nearbyplaces.BuildConfig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +11,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
+
+import myapp.nearby.android.nearbyplaces.BuildConfig;
 
 /**
  * Created by Deep on 9/1/2017.
@@ -43,9 +42,10 @@ public final class NetworkUtils {
 
         Uri builtUri = Uri.parse(PLACES_BASE_URL).buildUpon()
                  .appendQueryParameter(LOCATION,location)
-               // .appendQueryParameter(LOCATION, "21.831282,76.341071")
+                //.appendQueryParameter(LOCATION, "37.399470,-122.018095")
+                //.appendQueryParameter(LOCATION, "21.8312817,76.3388821")
                 .appendQueryParameter(RANK_BY, "distance")
-                .appendQueryParameter(TYPE, type)
+                //.appendQueryParameter(TYPE, type)
                 .appendQueryParameter(KEY_WORD, type)
                 .appendQueryParameter(API_KEY, BuildConfig.places_api_key)
                 .build();
@@ -57,8 +57,7 @@ public final class NetworkUtils {
             e.printStackTrace();
         }
 
-        Log.v(TAG, "Built URI " + url);
-
+      //  Log.d(TAG,"Url: " + url);
         return url;
     }
 
@@ -92,7 +91,6 @@ public final class NetworkUtils {
 
 
         } catch (Exception e) {
-            Log.e("Error", e.getMessage());
             e.printStackTrace();
         }
         return String.valueOf(builtUri);
@@ -141,8 +139,7 @@ public final class NetworkUtils {
             e.printStackTrace();
         }
 
-        Log.v(TAG, "Built URI " + url);
-
+       // Log.d(TAG,"Url: " + url);
         return url;
     }
 
