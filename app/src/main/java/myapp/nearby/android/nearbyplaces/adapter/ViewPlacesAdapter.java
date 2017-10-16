@@ -1,4 +1,4 @@
-package com.example.android.nearbyplaces.adapter;
+package myapp.nearby.android.nearbyplaces.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -13,10 +13,10 @@ import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-import com.example.android.nearbyplaces.R;
-import com.example.android.nearbyplaces.ui.ViewNearByPlacesActivity;
-import com.example.android.nearbyplaces.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
+
+import myapp.nearby.android.nearbyplaces.ui.ViewNearByPlacesActivity;
+import myapp.nearby.android.nearbyplaces.utilities.NetworkUtils;
 
 /**
  * Created by Deep on 9/1/2017.
@@ -47,7 +47,7 @@ public class ViewPlacesAdapter extends RecyclerView.Adapter<ViewPlacesAdapter.Vi
     @Override
     public ViewPlacesAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         mContext = viewGroup.getContext();
-        int layoutIdForGridItem = R.layout.list_places_item;
+        int layoutIdForGridItem = myapp.nearby.android.nearbyplaces.R.layout.list_places_item;
         LayoutInflater inflater = LayoutInflater.from(mContext);
         boolean shouldAttachToParentImmediately = false;
 
@@ -77,7 +77,7 @@ public class ViewPlacesAdapter extends RecyclerView.Adapter<ViewPlacesAdapter.Vi
         //String iconPath = mCursor.getString(ViewNearByPlacesActivity.INDEX_ICON_PATH);
         final String IMAGE_BASE_URL;
         if (photoReference.equals("")) {
-            viewPlacesAdapterViewHolder.mPlaceImage.setImageResource(R.drawable.imagenotavailable);
+            viewPlacesAdapterViewHolder.mPlaceImage.setImageResource(myapp.nearby.android.nearbyplaces.R.drawable.imagenotavailable);
 
         } else {
             IMAGE_BASE_URL = "https://maps.googleapis.com/maps/api/place/photo?";
@@ -141,13 +141,13 @@ public class ViewPlacesAdapter extends RecyclerView.Adapter<ViewPlacesAdapter.Vi
 
         public ViewPlacesAdapterViewHolder(View itemView) {
             super(itemView);
-            mlayoutPlaceItem = (LinearLayout) itemView.findViewById(R.id.layout_place_item);
-            mPlaceName = (TextView) itemView.findViewById(R.id.text_view_name);
-            mAddress = (TextView) itemView.findViewById(R.id.text_view_address);
-            mOpenNow = (TextView) itemView.findViewById(R.id.text_view_open_now);
-            mPlaceImage = (ImageView) itemView.findViewById(R.id.image_view_place);
-            mRatingTextView = (TextView) itemView.findViewById(R.id.text_view_rating);
-            mRatingBar = (RatingBar) itemView.findViewById(R.id.rating_bar);
+            mlayoutPlaceItem = (LinearLayout) itemView.findViewById(myapp.nearby.android.nearbyplaces.R.id.layout_place_item);
+            mPlaceName = (TextView) itemView.findViewById(myapp.nearby.android.nearbyplaces.R.id.text_view_name);
+            mAddress = (TextView) itemView.findViewById(myapp.nearby.android.nearbyplaces.R.id.text_view_address);
+            mOpenNow = (TextView) itemView.findViewById(myapp.nearby.android.nearbyplaces.R.id.text_view_open_now);
+            mPlaceImage = (ImageView) itemView.findViewById(myapp.nearby.android.nearbyplaces.R.id.image_view_place);
+            mRatingTextView = (TextView) itemView.findViewById(myapp.nearby.android.nearbyplaces.R.id.text_view_rating);
+            mRatingBar = (RatingBar) itemView.findViewById(myapp.nearby.android.nearbyplaces.R.id.rating_bar);
             itemView.setOnClickListener(this);
         }
 

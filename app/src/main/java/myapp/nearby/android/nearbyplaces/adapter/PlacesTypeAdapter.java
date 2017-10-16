@@ -1,4 +1,4 @@
-package com.example.android.nearbyplaces.adapter;
+package myapp.nearby.android.nearbyplaces.adapter;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -9,7 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.android.nearbyplaces.R;
+import myapp.nearby.android.nearbyplaces.R;
+
 
 /**
  * Created by Deep on 8/30/2017.
