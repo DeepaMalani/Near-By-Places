@@ -1,4 +1,4 @@
-package com.example.android.nearbyplaces.data;
+package myapp.nearby.android.nearbyplaces.data;
 
 
 import android.content.ContentResolver;
@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 
 public final class PlacesContract {
 
-    public static final String CONTENT_AUTHORITY = "com.example.android.nearbyplaces";
+    public static final String CONTENT_AUTHORITY = "myapp.nearby.android.nearbyplaces";
 
     // Use CONTENT_AUTHORITY to create the base of all URI's which apps will use to contact
     // the content provider.

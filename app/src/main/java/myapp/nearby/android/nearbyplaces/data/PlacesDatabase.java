@@ -1,4 +1,4 @@
-package com.example.android.nearbyplaces.data;
+package myapp.nearby.android.nearbyplaces.data;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
