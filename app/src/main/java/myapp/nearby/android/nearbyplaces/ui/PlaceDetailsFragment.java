@@ -1,6 +1,8 @@
-package com.example.android.nearbyplaces.ui;
+package myapp.nearby.android.nearbyplaces.ui;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -8,6 +10,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.ShareCompat;
@@ -23,16 +26,16 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.android.nearbyplaces.R;
-import com.example.android.nearbyplaces.data.PlacesContract;
-import com.example.android.nearbyplaces.remote.FetchPlaceDetails;
-import com.example.android.nearbyplaces.utilities.NetworkUtils;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import myapp.nearby.android.nearbyplaces.R;
+import myapp.nearby.android.nearbyplaces.data.PlacesContract;
+import myapp.nearby.android.nearbyplaces.remote.FetchPlaceDetails;
+import myapp.nearby.android.nearbyplaces.utilities.NetworkUtils;
 
 
 /**
@@ -47,8 +50,8 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
     public String mPlaceId = "";
     @BindView(R.id.lable_phone_number)
     TextView mLabelPhoneNumber;
-    //    @BindView(R.id.lable_website)
-//    TextView mLabelWebsite;
+    @BindView(R.id.linear_layout_call)
+    LinearLayout mLinearLayoutCall;
     @BindView(R.id.text_view_phone_number)
     TextView mTextViewPhoneNumber;
     @BindView(R.id.phone_number_divider)
@@ -227,7 +230,7 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
             int indexWebsite = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_WEBSITE);
             int indexUrl = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_URL);
 
-            String phoneNumber = cursor.getString(indexPhoneNumber);
+            final String phoneNumber = cursor.getString(indexPhoneNumber);
             //  double rating = cursor.getDouble(indexRating);
             String website = cursor.getString(indexWebsite);
             String url = cursor.getString(indexUrl);
@@ -254,9 +257,25 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
             if (phoneNumber.equals("")) {
                 mLabelPhoneNumber.setVisibility(View.GONE);
                 mPhoneNumberView.setVisibility(View.GONE);
+                mLinearLayoutCall.setVisibility(View.GONE);
 
-            } else
+            } else {
                 mTextViewPhoneNumber.setText(phoneNumber);
+                mLinearLayoutCall.setVisibility(View.VISIBLE);
+                mLinearLayoutCall.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent callIntent = new Intent(Intent.ACTION_CALL);
+                        callIntent.setData(Uri.parse("tel:" + phoneNumber));
+
+                        if (ActivityCompat.checkSelfPermission(getActivity(),
+                                Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                            return;
+                        }
+                        startActivity(callIntent);
+                    }
+                });
+            }
 
             if (website.equals("")) {
                 mLinearLayoutWebsite.setVisibility(View.GONE);
@@ -272,7 +291,14 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
 
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         i.setData(Uri.parse(mWebsite));
-                        startActivity(i);
+
+                       //Check if intent can be handled from activity
+                        PackageManager packageManager = getActivity().getPackageManager();
+                        if (i.resolveActivity(packageManager) != null) {
+                            startActivity(i);
+                        } else {
+                            return;
+                        }
                     }
                 });
 
@@ -289,7 +315,15 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
 
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         i.setData(Uri.parse(mUrl));
-                        startActivity(i);
+
+                        //Check if intent can be handled from activity
+                        PackageManager packageManager = getActivity().getPackageManager();
+                        if (i.resolveActivity(packageManager) != null) {
+                            startActivity(i);
+                        } else {
+                            return;
+                        }
+
                     }
                 });
             }

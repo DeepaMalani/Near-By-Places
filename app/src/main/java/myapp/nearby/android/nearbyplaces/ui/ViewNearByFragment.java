@@ -1,4 +1,4 @@
-package com.example.android.nearbyplaces.ui;
+package myapp.nearby.android.nearbyplaces.ui;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,17 +18,17 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
-
-import com.example.android.nearbyplaces.R;
-import com.example.android.nearbyplaces.adapter.ViewPlacesAdapter;
-import com.example.android.nearbyplaces.data.PlacesContract;
-import com.example.android.nearbyplaces.remote.FetchPlaces;
-import com.example.android.nearbyplaces.utilities.NetworkUtils;
-import com.example.android.nearbyplaces.widgets.UpdateWidgetService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import myapp.nearby.android.nearbyplaces.R;
+import myapp.nearby.android.nearbyplaces.adapter.ViewPlacesAdapter;
+import myapp.nearby.android.nearbyplaces.data.PlacesContract;
+import myapp.nearby.android.nearbyplaces.remote.FetchPlaces;
+import myapp.nearby.android.nearbyplaces.utilities.NetworkUtils;
+import myapp.nearby.android.nearbyplaces.widgets.UpdateWidgetService;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -40,14 +40,13 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
 
     public static final String PLACE_ID = "place_id";
     public static final String PLACE_NAME = "place_name";
-//    @BindView(R.id.text_view_activity_title)
-//    TextView mActivityTitle;
-//    @BindView(R.id.toolbar)
-//    Toolbar mToolbar;
+
     public static final String PHOTO_REFERENCE = "photo_reference";
     public static final String ICON_PATH = "icon_path";
     private static final String TAG = ViewNearByFragment.class.getSimpleName();
     private static final int PLACE_LOADER_ID = 0;
+
+    private int mNumberOfRecords = 0;
     public static String PLACE_ID_PREF_NAME = "place_id_pref";
     final int WHAT = 1;
     public String mfirstPlaceId;
@@ -55,6 +54,9 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
     public String mfirstPhoto_reference;
     @BindView(R.id.recycler_view_near_by)
     RecyclerView mRecyclerView;
+
+    public static ProgressBar mLoadingIndicator;
+
     // Define a new interface OnPlaceNameClickListener that triggers a callback in the host activity
     OnPlaceNameClickListener mCallback;
     // Define a new interface DisplayFirstRecord that triggers a callback in the host activity
@@ -82,6 +84,9 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
         View rootView = inflater.inflate(R.layout.fragment_view_near_by, container, false);
         ButterKnife.bind(this, rootView);
 
+        mLoadingIndicator = (ProgressBar)rootView.findViewById(R.id.pb_loading_indicator) ;
+
+
         Intent intent = getActivity().getIntent();
         if (intent != null && intent.hasExtra(MainActivity.TITLE) && intent.hasExtra(MainActivity.TYPE)) {
             mPlaceType = intent.getStringExtra(MainActivity.TYPE);
@@ -92,6 +97,9 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
             mRecyclerView.setLayoutManager(linearLayoutManager);
             //RecipeStepsAdapter is  for linking the data with recycler views
             mViewPlacesAdapter = new ViewPlacesAdapter(getContext(), null);
+
+
+            showLoading();
             //Attach adapter to recycler
             mRecyclerView.setAdapter(mViewPlacesAdapter);
             mViewPlacesAdapter.setOnItemClickListener(new ViewPlacesAdapter.ViewPlacesAdapterOnClickHandler() {
@@ -102,6 +110,8 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
                     savePlaceDetails(placeId, placeName, photo_reference);
                 }
             });
+
+
         }
         //Set activity title
 
@@ -120,23 +130,50 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
         UpdateWidgetService.startActionUpdatePlaceWidgets(getActivity());
     }
 
+    /**
+     * This method will make the View for the places data visible and hide the error message and
+     * loading indicator.
+
+     */
+    private void showPlacesDataView() {
+        /* First, hide the loading indicator */
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        /* Finally, make sure the weather data is visible */
+        mRecyclerView.setVisibility(View.VISIBLE);
+    }
+    /**
+     * This method will make the loading indicator visible and hide the weather View and error
+     * message.
+     */
+    private void showLoading() {
+        /* Then, hide the weather data */
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        /* Finally, show the loading indicator */
+        mLoadingIndicator.setVisibility(View.VISIBLE);
+    }
+
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
         //Initialize loader
         getLoaderManager().initLoader(PLACE_LOADER_ID, null, this);
+
     }
 
     @Override
     public void onStart() {
         super.onStart();
+
         if (NetworkUtils.isOnline(getActivity())) {
                /* Load the  data if phone is connected to internet. */
             FetchPlaces places = new FetchPlaces(getActivity(), mPlaceType, mLocation);
             places.execute();
+
         } else {
             showErrorMessage(getString(R.string.network_msg));
         }
+
     }
 
     /**
@@ -145,6 +182,7 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
      */
     private void showErrorMessage(String message) {
         Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
 
     }
 
@@ -186,19 +224,26 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
         mViewPlacesAdapter.swapCursor(data);
 
         if (data != null) {
+
+            mNumberOfRecords = data.getCount();
             if (data.getCount() != 0) {
+                showPlacesDataView();
                 data.moveToFirst();
                 mfirstPlaceId = data.getString(ViewNearByPlacesActivity.INDEX_PLACE_ID);
                 mfirstPlaceName = data.getString(ViewNearByPlacesActivity.INDEX_PLACE_NAME);
                 mfirstPhoto_reference = data.getString(ViewNearByPlacesActivity.INDEX_PHOTO_REFERENCE);
-                // mDisplayFirstRecord.replaceFirstRecordFragment(mfirstPlaceId, mfirstPlaceName,mfirstPhoto_reference);
                 handler.sendEmptyMessage(WHAT);
             }
+
+
         }
+
+
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+
         mViewPlacesAdapter.swapCursor(null);
     }
 

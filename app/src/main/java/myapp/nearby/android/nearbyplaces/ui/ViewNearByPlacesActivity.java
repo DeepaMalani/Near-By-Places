@@ -1,15 +1,15 @@
-package com.example.android.nearbyplaces.ui;
+package myapp.nearby.android.nearbyplaces.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 
-import com.example.android.nearbyplaces.R;
+import myapp.nearby.android.nearbyplaces.R;
 
-import static com.example.android.nearbyplaces.ui.ViewNearByFragment.PHOTO_REFERENCE;
-import static com.example.android.nearbyplaces.ui.ViewNearByFragment.PLACE_ID;
-import static com.example.android.nearbyplaces.ui.ViewNearByFragment.PLACE_NAME;
+import static myapp.nearby.android.nearbyplaces.ui.ViewNearByFragment.PHOTO_REFERENCE;
+import static myapp.nearby.android.nearbyplaces.ui.ViewNearByFragment.PLACE_ID;
+import static myapp.nearby.android.nearbyplaces.ui.ViewNearByFragment.PLACE_NAME;
 
 public class ViewNearByPlacesActivity extends AppCompatActivity implements ViewNearByFragment.OnPlaceNameClickListener, ViewNearByFragment.DisplayFirstRecord {
 

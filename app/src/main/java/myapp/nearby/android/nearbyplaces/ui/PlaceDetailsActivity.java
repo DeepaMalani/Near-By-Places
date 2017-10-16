@@ -1,10 +1,8 @@
-package com.example.android.nearbyplaces.ui;
+package myapp.nearby.android.nearbyplaces.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-
-import com.example.android.nearbyplaces.R;
 
 public class PlaceDetailsActivity extends AppCompatActivity {
 
@@ -16,7 +14,7 @@ public class PlaceDetailsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_place_details);
+        setContentView(myapp.nearby.android.nearbyplaces.R.layout.activity_place_details);
 
 
         Intent intent = getIntent();
@@ -35,7 +33,7 @@ public class PlaceDetailsActivity extends AppCompatActivity {
             placeDetailsFragment.setTwoPane(false);
             // Replace the old  fragment with a new one
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.place_details_container, placeDetailsFragment)
+                    .replace(myapp.nearby.android.nearbyplaces.R.id.place_details_container, placeDetailsFragment)
                     .commit();
 
         }
