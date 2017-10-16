@@ -1,13 +1,12 @@
-package com.example.android.nearbyplaces.remote;
+package myapp.nearby.android.nearbyplaces.remote;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
-
-import com.example.android.nearbyplaces.utilities.NetworkUtils;
-import com.example.android.nearbyplaces.utilities.OpenPlaceDetailsJsonUtils;
 
 import java.net.URL;
+
+import myapp.nearby.android.nearbyplaces.utilities.NetworkUtils;
+import myapp.nearby.android.nearbyplaces.utilities.OpenPlaceDetailsJsonUtils;
 
 /**
  * Created by Deep on 9/5/2017.
@@ -31,7 +30,7 @@ public class FetchPlaceDetails extends AsyncTask<Void, Void, Void> {
         try {
             String jsonPlaceDetailResponse = NetworkUtils
                     .getResponseFromHttpUrl(placeDetailRequestUrl);
-            Log.d(TAG, "Results: " + jsonPlaceDetailResponse);
+
             OpenPlaceDetailsJsonUtils.getPlaceDetailDataFromJson(jsonPlaceDetailResponse, mContext, mPlaceId);
         } catch (Exception e) {
             e.printStackTrace();
