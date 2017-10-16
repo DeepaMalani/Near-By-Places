@@ -1,4 +1,4 @@
-package com.example.android.nearbyplaces.widgets;
+package myapp.nearby.android.nearbyplaces.widgets;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -7,9 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.widget.RemoteViews;
 
-import com.example.android.nearbyplaces.R;
-import com.example.android.nearbyplaces.ui.PlaceDetailsActivity;
-import com.example.android.nearbyplaces.ui.ViewNearByFragment;
+import myapp.nearby.android.nearbyplaces.ui.PlaceDetailsActivity;
+import myapp.nearby.android.nearbyplaces.ui.ViewNearByFragment;
 
 /**
  * Implementation of App Widget functionality.
@@ -23,15 +22,15 @@ public class PlaceWidget extends AppWidgetProvider {
 
         //if(placeName==null)
         if (placeName.equals(""))
-            strWidgetText = context.getString(R.string.empty_widget_text);
+            strWidgetText = context.getString(myapp.nearby.android.nearbyplaces.R.string.empty_widget_text);
         else
             strWidgetText = placeName;
 
-        CharSequence widgetText = context.getString(R.string.appwidget_text);
+        CharSequence widgetText = context.getString(myapp.nearby.android.nearbyplaces.R.string.appwidget_text);
         // Construct the RemoteViews object
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.place_widget);
-        views.setTextViewText(R.id.appwidget_text, strWidgetText);
-        views.setContentDescription(R.id.appwidget_text, strWidgetText);
+        RemoteViews views = new RemoteViews(context.getPackageName(), myapp.nearby.android.nearbyplaces.R.layout.place_widget);
+        views.setTextViewText(myapp.nearby.android.nearbyplaces.R.id.appwidget_text, strWidgetText);
+        views.setContentDescription(myapp.nearby.android.nearbyplaces.R.id.appwidget_text, strWidgetText);
 
 
         //Create an Intent to launch place details activity when clicked
@@ -41,7 +40,7 @@ public class PlaceWidget extends AppWidgetProvider {
         intent.putExtra(ViewNearByFragment.PHOTO_REFERENCE, photo_reference);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         //widget click
-        views.setOnClickPendingIntent(R.id.appwidget_text, pendingIntent);
+        views.setOnClickPendingIntent(myapp.nearby.android.nearbyplaces.R.id.appwidget_text, pendingIntent);
 
 
         // Instruct the widget manager to update the widget

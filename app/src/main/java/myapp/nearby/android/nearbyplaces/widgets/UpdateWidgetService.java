@@ -1,4 +1,4 @@
-package com.example.android.nearbyplaces.widgets;
+package myapp.nearby.android.nearbyplaces.widgets;
 
 import android.app.IntentService;
 import android.appwidget.AppWidgetManager;
@@ -8,7 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 
-import com.example.android.nearbyplaces.ui.ViewNearByFragment;
+import myapp.nearby.android.nearbyplaces.ui.ViewNearByFragment;
 
 /**
  * Created by Deep on 9/14/2017.
