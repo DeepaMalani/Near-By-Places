@@ -1,10 +1,10 @@
-package com.example.android.nearbyplaces;
+package myapp.nearby.android.nearbyplaces;
 
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.example.android.nearbyplaces.ui.MainActivity;
+import myapp.nearby.android.nearbyplaces.ui.MainActivity;
 
 import org.junit.Rule;
 import org.junit.Test;

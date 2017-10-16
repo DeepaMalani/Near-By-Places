@@ -1,4 +1,4 @@
-package com.example.android.nearbyplaces;
+package myapp.nearby.android.nearbyplaces;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
