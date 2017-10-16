@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.android.nearbyplaces">
+    android:versionCode="2"
+    android:versionName="@string/app_version"
+    package="myapp.nearby.android.nearbyplaces">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
+    <!-- Needed only if your app targets Android 5.0 (API level 21) or higher. -->
+    <uses-feature android:name="android.hardware.location.gps " />
+
 
     <application
         android:allowBackup="true"
@@ -13,30 +19,36 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
 
+        <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
         <provider
-            android:name=".data.PlacesProvider"
-            android:authorities="com.example.android.nearbyplaces" />
+            android:name="myapp.nearby.android.nearbyplaces.data.PlacesProvider"
+            android:authorities="myapp.nearby.android.nearbyplaces" />
 
         <activity
-            android:name=".ui.MainActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme">
+            android:name="myapp.nearby.android.nearbyplaces.ui.SplashActivity"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            </activity>
+
+        <activity
+            android:name="myapp.nearby.android.nearbyplaces.ui.MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme">
         </activity>
         <activity
-            android:name=".ui.ViewNearByPlacesActivity"
-            android:parentActivityName=".ui.MainActivity"
+            android:name="myapp.nearby.android.nearbyplaces.ui.ViewNearByPlacesActivity"
+            android:parentActivityName="myapp.nearby.android.nearbyplaces.ui.MainActivity"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".ui.PlaceDetailsActivity"
+            android:name="myapp.nearby.android.nearbyplaces.ui.PlaceDetailsActivity"
             android:theme="@style/PlaceDetailActivityTheme"></activity>
 
-        <receiver android:name=".widgets.PlaceWidget">
+        <receiver android:name="myapp.nearby.android.nearbyplaces.widgets.PlaceWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -45,7 +57,7 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/place_widget_info" />
         </receiver>
-        <service android:name=".widgets.UpdateWidgetService"></service>
+        <service android:name="myapp.nearby.android.nearbyplaces.widgets.UpdateWidgetService"></service>
     </application>
 
 </manifest>
