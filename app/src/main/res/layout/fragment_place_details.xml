@@ -73,18 +73,29 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
+            <!--Linear layout for call-->
+            <LinearLayout
+                android:id="@+id/linear_layout_call"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
             <TextView
                 android:id="@+id/lable_phone_number"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginTop="16dp"
                 android:text="@string/contact_details"
                 android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
                 android:textColor="@android:color/black" />
@@ -93,17 +104,24 @@
                 android:id="@+id/text_view_phone_number"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:textAppearance="@style/Base.TextAppearance.AppCompat.Small" />
+                    </LinearLayout>
+            <ImageView
+                android:id="@+id/image_view_call_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_keyboard_arrow_right"
 
+                />
+        </LinearLayout>
             <View
                 android:id="@+id/phone_number_divider"
                 android:layout_width="match_parent"
                 android:layout_height="2px"
                 android:layout_marginTop="8dp"
                 android:background="@android:color/black" />
+
 
             <LinearLayout
                 android:id="@+id/linear_layout_website"
@@ -152,7 +170,7 @@
                 android:layout_height="2px"
                 android:layout_marginTop="8dp"
                 android:background="@android:color/black" />
-
+            <!--Linear layout for directions-->
             <LinearLayout
                 android:id="@+id/linear_layout_directions"
                 android:layout_width="match_parent"

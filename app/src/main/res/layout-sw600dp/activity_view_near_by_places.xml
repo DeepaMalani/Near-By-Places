@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="horizontal"
-    tools:context="com.example.android.nearbyplaces.ui.ViewNearByPlacesActivity">
+    tools:context="myapp.nearby.android.nearbyplaces.ui.ViewNearByPlacesActivity">
 
     <!--
        This layout is a two-pane layout for the master/detail flow.
@@ -14,7 +14,7 @@
     <!-- The static view near by Fragment -->
     <fragment
         android:id="@+id/view_near_by_fragment"
-        android:name="com.example.android.nearbyplaces.ui.ViewNearByFragment"
+        android:name="myapp.nearby.android.nearbyplaces.ui.ViewNearByFragment"
         android:layout_width="280dp"
         android:layout_height="match_parent" />
 

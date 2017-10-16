@@ -3,7 +3,7 @@
     <string name="action_settings">Settings</string>
     <string name="open_now">Open now</string>
     <string name="closed">Closed</string>
-    <string name="contact_details">Contact Details</string>
+    <string name="contact_details">Call</string>
     <string name="opening_hours">Opening Hours</string>
     <string name="website">Website</string>
     <string name="directions">Directions</string>
@@ -17,4 +17,19 @@
     <string name="viewed_place">Recently viewed place</string>
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
     <string name="share">Share the place</string>
+    <string name="app_version">2.0</string>
+    <string name="location_message">Could not get your current location.</string>
+   <string name="location_error_message">Error when trying to get current location</string>
+  <string name="location_permission_denied">Location permission denied.</string>
+
+    <string name="no_location_detected">
+        No location detected. Make sure location is enabled on the device.
+    </string>
+
+    <string name="permission_rationale">Location permission is needed for core functionality</string>
+    <string name="permission_denied_explanation">Permission was denied, but is needed for core
+        functionality.</string>
+    <string name="settings">Settings</string>
+    <string name="no_data">No results found.</string>
 </resources>
+

@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/linear_layout_places"
     android:orientation="vertical">
 
     <android.support.v7.widget.RecyclerView
@@ -12,12 +13,22 @@
         android:layout_weight="1"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/adView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        ads:adSize="BANNER"
-        ads:adUnitId="@string/banner_ad_unit_id"></com.google.android.gms.ads.AdView>
+    <!--<Button-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/btnLocation"-->
+        <!--android:text="Click"-->
+        <!--android:onClick="getLocation"/>-->
+    <!--<TextView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/text_view_location"/>-->
+    <!--<com.google.android.gms.ads.AdView-->
+        <!--android:id="@+id/adView"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="bottom"-->
+        <!--ads:adSize="BANNER"-->
+        <!--ads:adUnitId="@string/banner_ad_unit_id"></com.google.android.gms.ads.AdView>-->
 
 </LinearLayout>
