@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,12 +26,13 @@ public final class NetworkUtils {
     private static final String PLACE_DETAIL_URL = "https://maps.googleapis.com/maps/api/place/details/json?";
 
     /**
-     * Builds the url.
-     *
-     * @param context
+     * Build Url to get nearby places
+     * @param type
+     * @param keyword
+     * @param location
      * @return
      */
-    public static URL buildUrl(Context context, String type, String location) {
+    public static URL buildUrl(String type,String keyword, String location) {
 
 
         final String LOCATION = "location";
@@ -42,11 +44,12 @@ public final class NetworkUtils {
 
         Uri builtUri = Uri.parse(PLACES_BASE_URL).buildUpon()
                  .appendQueryParameter(LOCATION,location)
-                //.appendQueryParameter(LOCATION, "37.399470,-122.018095")
+               // .appendQueryParameter(LOCATION, "37.399470,-122.018095")
                 //.appendQueryParameter(LOCATION, "21.8312817,76.3388821")
-                .appendQueryParameter(RANK_BY, "distance")
-                //.appendQueryParameter(TYPE, type)
-                .appendQueryParameter(KEY_WORD, type)
+                //.appendQueryParameter(RANK_BY, "distance")
+                .appendQueryParameter("radius","5000")
+                  .appendQueryParameter(TYPE, type)
+                 .appendQueryParameter(KEY_WORD, keyword)
                 .appendQueryParameter(API_KEY, BuildConfig.places_api_key)
                 .build();
 
@@ -57,10 +60,41 @@ public final class NetworkUtils {
             e.printStackTrace();
         }
 
-      //  Log.d(TAG,"Url: " + url);
+        Log.d(TAG,"Url: " + url);
         return url;
     }
+    public static URL buildUrlWithNextPageToken(String type,String keyword, String location,String nextPageToken) {
 
+
+        final String LOCATION = "location";
+        // final String RADIUS ="radius";
+        final String TYPE = "type";
+        final String RANK_BY = "rankby";
+        final String KEY_WORD = "keyword";
+        final String API_KEY = "key";
+        final String PAGE_TOKEN = "pagetoken";
+
+        Uri builtUri = Uri.parse(PLACES_BASE_URL).buildUpon()
+                .appendQueryParameter(LOCATION,location)
+               // .appendQueryParameter(LOCATION, "37.399470,-122.018095")
+               // .appendQueryParameter(LOCATION, "21.8312817,76.3388821")
+                .appendQueryParameter("radius","5000")
+                .appendQueryParameter(TYPE, type)
+                .appendQueryParameter(KEY_WORD, keyword)
+                .appendQueryParameter(API_KEY, BuildConfig.places_api_key)
+                .appendQueryParameter(PAGE_TOKEN,nextPageToken)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        Log.d(TAG,"Url: " + url);
+        return url;
+    }
     /**
      * Build url to fetch place image
      *
@@ -139,7 +173,7 @@ public final class NetworkUtils {
             e.printStackTrace();
         }
 
-       // Log.d(TAG,"Url: " + url);
+        Log.d(TAG,"PlaceDetailsUrl: " + url);
         return url;
     }
 

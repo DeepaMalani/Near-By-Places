@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,11 +17,18 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -45,17 +54,19 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
     public static final String ICON_PATH = "icon_path";
     private static final String TAG = ViewNearByFragment.class.getSimpleName();
     private static final int PLACE_LOADER_ID = 0;
-
     private int mNumberOfRecords = 0;
     public static String PLACE_ID_PREF_NAME = "place_id_pref";
     final int WHAT = 1;
     public String mfirstPlaceId;
     public String mfirstPlaceName;
     public String mfirstPhoto_reference;
+    private boolean mSaveInstance = false;
+
     @BindView(R.id.recycler_view_near_by)
     RecyclerView mRecyclerView;
 
     public static ProgressBar mLoadingIndicator;
+    public static TextView mTextViewNoResults;
 
     // Define a new interface OnPlaceNameClickListener that triggers a callback in the host activity
     OnPlaceNameClickListener mCallback;
@@ -71,9 +82,13 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
     };
     private ViewPlacesAdapter mViewPlacesAdapter;
     private String mPlaceType;
+    private String mPlaceKeyword;
     private String mTitle;
     private String mLocation;
     private boolean mTwoPane = true;
+    private double mLatitude;
+    private double mLongitude;
+    private boolean mDataDate;
 
     public ViewNearByFragment() {
         super();
@@ -84,14 +99,22 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
         View rootView = inflater.inflate(R.layout.fragment_view_near_by, container, false);
         ButterKnife.bind(this, rootView);
 
-        mLoadingIndicator = (ProgressBar)rootView.findViewById(R.id.pb_loading_indicator) ;
 
+        if (savedInstanceState != null) {
+            mSaveInstance = savedInstanceState.getBoolean("SaveInstance");
+        }
+
+        mLoadingIndicator = (ProgressBar) rootView.findViewById(R.id.pb_loading_indicator);
+        mTextViewNoResults = (TextView) rootView.findViewById(R.id.text_view_no_result);
 
         Intent intent = getActivity().getIntent();
         if (intent != null && intent.hasExtra(MainActivity.TITLE) && intent.hasExtra(MainActivity.TYPE)) {
             mPlaceType = intent.getStringExtra(MainActivity.TYPE);
+            mPlaceKeyword = intent.getStringExtra(MainActivity.KEYWORD);
             mTitle = intent.getStringExtra(MainActivity.TITLE);
-            mLocation = intent.getStringExtra(MainActivity.LOCATION);
+            mLatitude = intent.getDoubleExtra(MainActivity.LATITUDE, 0.0);
+            mLongitude = intent.getDoubleExtra(MainActivity.LONGITUDE, 0.0);
+            mLocation = String.valueOf(mLatitude) + "," + String.valueOf(mLongitude);
             LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
             linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
             mRecyclerView.setLayoutManager(linearLayoutManager);
@@ -114,10 +137,78 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
 
         }
         //Set activity title
-
         getActivity().setTitle(mTitle);
 
+
+
+        //Fetch data if it's not already inserted in database.
+        Cursor cursor = getActivity().getContentResolver().query
+                (PlacesContract.PlaceEntry.CONTENT_URI,
+                        null,
+                        PlacesContract.PlaceEntry.COLUMN_CURRENT_LAT + " = ? AND " +
+                                PlacesContract.PlaceEntry.COLUMN_CURRENT_LONG + " = ? AND " +
+                                PlacesContract.PlaceEntry.COLUMN_PLACE_TYPE + " = ? ",
+                        new String[]{String.valueOf(mLatitude), String.valueOf(mLongitude), mPlaceType},
+                        null);
+
+        int countRows = cursor.getCount();
+
+        if(countRows > 0)
+        {
+            cursor.moveToFirst();
+            String placeDate = cursor.getString(cursor.getColumnIndex(PlacesContract.PlaceEntry.COLUMN_CURRENT_DATE));
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String currentDate = sdf.format(new Date(System.currentTimeMillis()));
+
+            if (placeDate.equals(currentDate)) {
+               mDataDate = true;
+            }
+        }
+
+        if (countRows == 0) {
+
+            if (NetworkUtils.isOnline(getActivity())) {
+
+               /* Load the  data if phone is connected to internet. */
+                if (!mSaveInstance) {
+                    FetchPlaces places = new FetchPlaces(getActivity(), mPlaceType, mPlaceKeyword, mLocation, mLatitude, mLongitude);
+                    places.execute();
+                }
+            }
+
+         else {
+            showErrorMessage(getString(R.string.network_msg));
+
+        }
+    }
         return rootView;
+    }
+
+    private String getAddressFromLatLong(double latitude,double longitude) {
+        Geocoder geocoder;
+        List<Address> addresses;
+        String address = "";
+        geocoder = new Geocoder(getActivity(), Locale.getDefault());
+
+        try {
+
+            addresses = geocoder.getFromLocation(latitude, longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+            if (addresses != null) {
+                address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+                String city = addresses.get(0).getLocality();
+                String state = addresses.get(0).getAdminArea();
+                String country = addresses.get(0).getCountryName();
+                String postalCode = addresses.get(0).getPostalCode();
+                String knownName = addresses.get(0).getFeatureName();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.d(TAG, "Can not get address");
+
+        }
+        return address;
     }
 
     private void savePlaceDetails(String placeId, String placeName, String photo_refrence) {
@@ -136,6 +227,7 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
 
      */
     private void showPlacesDataView() {
+
         /* First, hide the loading indicator */
         mLoadingIndicator.setVisibility(View.INVISIBLE);
         /* Finally, make sure the weather data is visible */
@@ -146,7 +238,8 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
      * message.
      */
     private void showLoading() {
-        /* Then, hide the weather data */
+
+        /* Then, hide the  data */
         mRecyclerView.setVisibility(View.INVISIBLE);
         /* Finally, show the loading indicator */
         mLoadingIndicator.setVisibility(View.VISIBLE);
@@ -164,16 +257,12 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
     @Override
     public void onStart() {
         super.onStart();
+    }
 
-        if (NetworkUtils.isOnline(getActivity())) {
-               /* Load the  data if phone is connected to internet. */
-            FetchPlaces places = new FetchPlaces(getActivity(), mPlaceType, mLocation);
-            places.execute();
-
-        } else {
-            showErrorMessage(getString(R.string.network_msg));
-        }
-
+    @Override
+    public void onSaveInstanceState(Bundle currentState) {
+        super.onSaveInstanceState(currentState);
+        currentState.putBoolean("SaveInstance", true);
     }
 
     /**
@@ -215,7 +304,7 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
                 null,
                 PlacesContract.PlaceEntry.COLUMN_PLACE_TYPE + " = ?",
                 new String[]{mPlaceType},
-                null);
+                PlacesContract.PlaceEntry.COLUMN_DISTANCE);
 
     }
 
@@ -224,7 +313,6 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
         mViewPlacesAdapter.swapCursor(data);
 
         if (data != null) {
-
             mNumberOfRecords = data.getCount();
             if (data.getCount() != 0) {
                 showPlacesDataView();
@@ -235,9 +323,7 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
                 handler.sendEmptyMessage(WHAT);
             }
 
-
         }
-
 
     }
 
@@ -257,5 +343,6 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
     public interface DisplayFirstRecord {
         void replaceFirstRecordFragment(String placeId, String placeName, String photo_reference);
     }
+
 
 }

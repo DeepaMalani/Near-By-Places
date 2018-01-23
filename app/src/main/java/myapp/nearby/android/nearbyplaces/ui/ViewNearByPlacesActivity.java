@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import myapp.nearby.android.nearbyplaces.R;
 
@@ -18,7 +20,7 @@ public class ViewNearByPlacesActivity extends AppCompatActivity implements ViewN
     public static final int INDEX_PLACE_ADDRESS = 4;
     public static final int INDEX_RATING = 5;
     public static final int INDEX_PHOTO_REFERENCE = 6;
-    // public static final int INDEX_ICON_PATH = 7;
+    public static final int INDEX_DISTANCE = 7;
 
     // Track whether to display a two-pane or single-pane UI
     // A single-pane display refers to phone screens, and two-pane to larger tablet screens
@@ -71,6 +73,20 @@ public class ViewNearByPlacesActivity extends AppCompatActivity implements ViewN
     protected void onStart() {
         super.onStart();
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+      //  getMenuInflater().inflate(R.menu.menu_main,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int Id = item.getItemId();
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

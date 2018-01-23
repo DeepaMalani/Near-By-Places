@@ -25,7 +25,10 @@ public class PlacesDatabase extends SQLiteOpenHelper {
                 PlacesContract.PlaceEntry.COLUMN_ADDRESS + " TEXT NOT NULL, " +
                 PlacesContract.PlaceEntry.COLUMN_RATING + " REAL NOT NULL, " +
                 PlacesContract.PlaceEntry.COLUMN_PHOTO_REFERENCE + " TEXT NOT NULL, " +
-
+                PlacesContract.PlaceEntry.COLUMN_DISTANCE + " REAL NOT NULL, " +
+                PlacesContract.PlaceEntry.COLUMN_CURRENT_LAT + " REAL NOT NULL, " +
+                PlacesContract.PlaceEntry.COLUMN_CURRENT_LONG + " REAL NOT NULL, " +
+                PlacesContract.PlaceEntry.COLUMN_CURRENT_DATE + " TEXT NOT NULL, " +
 
                 // To assure the application have just one place entry
                 // per place id, it's created a UNIQUE constraint with REPLACE strategy
@@ -40,12 +43,32 @@ public class PlacesDatabase extends SQLiteOpenHelper {
                 PlacesContract.PlaceDetailEntry.COLUMN_WEBSITE + " TEXT NOT NULL, " +
                 PlacesContract.PlaceDetailEntry.COLUMN_URL + " TEXT NOT NULL, " +
 
-                // To assure the application have just one movie entry
+                // To assure the application have just one place detail entry
                 // per place id, it's created a UNIQUE constraint with REPLACE strategy
                 " UNIQUE (" + PlacesContract.PlaceDetailEntry.COLUMN_PLACE_ID + ") ON CONFLICT REPLACE);";
 
+
+
+        // Create a place revies table.
+        final String SQL_CREATE_PLACE_REVIEWS_TABLE = "CREATE TABLE " + PlacesContract.PlaceReviewsEntry.TABLE_NAME + " (" +
+                PlacesContract.PlaceReviewsEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                PlacesContract.PlaceReviewsEntry.COLUMN_PLACE_DETAILS_KEY + " INTEGER NOT NULL, " +
+                PlacesContract.PlaceReviewsEntry.COLUMN_AUTHOR_NAME + " TEXT NOT NULL, " +
+                PlacesContract.PlaceReviewsEntry.COLUMN_RATINGS + " REAL, " +
+                PlacesContract.PlaceReviewsEntry.COLUMN_REVIEW_TIME + " TEXT, " +
+                PlacesContract.PlaceReviewsEntry.COLUMN_REVIEW_DESCRIPTION + " TEXT NOT NULL, " +
+
+                // Set up the location column as a foreign key to location table.
+                " FOREIGN KEY (" + PlacesContract.PlaceReviewsEntry.COLUMN_PLACE_DETAILS_KEY + ") REFERENCES " +
+                PlacesContract.PlaceDetailEntry.TABLE_NAME + " (" + PlacesContract.PlaceDetailEntry._ID + ") " +
+                " );";
+
+
+
+
         sqLiteDatabase.execSQL(SQL_CREATE_PLACE_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_PLACE_DETAILS_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_PLACE_REVIEWS_TABLE);
     }
 
     //This will calls only when database version change.
@@ -54,6 +77,7 @@ public class PlacesDatabase extends SQLiteOpenHelper {
 
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PlacesContract.PlaceEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PlacesContract.PlaceDetailEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PlacesContract.PlaceReviewsEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
 
     }

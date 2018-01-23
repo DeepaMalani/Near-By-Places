@@ -1,11 +1,15 @@
 package myapp.nearby.android.nearbyplaces.utilities;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.net.Uri;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Vector;
 
 import myapp.nearby.android.nearbyplaces.data.PlacesContract;
 
@@ -36,13 +40,17 @@ public class OpenPlaceDetailsJsonUtils {
         final String OPENING_HOURS = "opening_hours";
         final String WEEKDAY_TEXT = "weekday_text";
         final String RATING = "rating";
+        final String REVIEWS = "reviews";
         final String URL = "url";
         final String WEBSITE = "website";
+        final String AUTHOR_NAME= "author_name";
+        final String REVIEW_TIME ="relative_time_description";
+        final String REVIEW_DESCRIPTION ="text";
 
         try {
             String place_id;
             String phone_number;
-            double rating;
+            //double rating;
             String website;
             String url;
             String openingHours;
@@ -57,6 +65,8 @@ public class OpenPlaceDetailsJsonUtils {
             else
                 phone_number = "";
 
+
+
             if (resultPlaceDetails.has(OPENING_HOURS)) {
                 JSONObject resultOpening_Hours = resultPlaceDetails.getJSONObject(OPENING_HOURS);
                 JSONArray weekday_text_array = resultOpening_Hours.getJSONArray(WEEKDAY_TEXT);
@@ -69,10 +79,10 @@ public class OpenPlaceDetailsJsonUtils {
             } else
                 openingHours = "";
 
-            if (resultPlaceDetails.has(RATING))
-                rating = resultPlaceDetails.getDouble(RATING);
-            else
-                rating = 0.0;
+//            if (resultPlaceDetails.has(RATING))
+//                rating = resultPlaceDetails.getDouble(RATING);
+//            else
+//                rating = 0.0;
 
             if (resultPlaceDetails.has(WEBSITE))
                 website = resultPlaceDetails.getString(WEBSITE);
@@ -92,8 +102,46 @@ public class OpenPlaceDetailsJsonUtils {
             placeDetailContentValue.put(PlacesContract.PlaceDetailEntry.COLUMN_URL, url);
 
             //Insert data into database
-            context.getContentResolver().insert(PlacesContract.PlaceDetailEntry.CONTENT_URI, placeDetailContentValue);
+            Uri insertedUri = context.getContentResolver().insert(PlacesContract.PlaceDetailEntry.CONTENT_URI, placeDetailContentValue);
+            // The resulting URI contains the ID for the row.  Extract the placeDetailsId from the Uri.
+           long placeDetailsId = ContentUris.parseId(insertedUri);
 
+            if(resultPlaceDetails.has(REVIEWS))
+            {
+                JSONArray reviewsArray = resultPlaceDetails.getJSONArray(REVIEWS);
+                String authorName;
+                double rating;
+                String reviewTimeDescription;
+                String reviewDescription;
+
+                // Insert the new review information into the database
+                Vector<ContentValues> cVVector = new Vector<ContentValues>(reviewsArray.length());
+
+                for (int i = 0; i < reviewsArray.length(); i++) {
+                    JSONObject review = reviewsArray.getJSONObject(i);
+                    authorName = review.getString(AUTHOR_NAME);
+                    rating = review.getDouble(RATING);
+                    reviewTimeDescription = review.getString(REVIEW_TIME);
+                    reviewDescription = review.getString(REVIEW_DESCRIPTION);
+
+                    ContentValues reviewValues = new ContentValues();
+                    reviewValues.put(PlacesContract.PlaceReviewsEntry.COLUMN_PLACE_DETAILS_KEY,placeDetailsId);
+                    reviewValues.put(PlacesContract.PlaceReviewsEntry.COLUMN_AUTHOR_NAME,authorName);
+                    reviewValues.put(PlacesContract.PlaceReviewsEntry.COLUMN_RATINGS,rating);
+                    reviewValues.put(PlacesContract.PlaceReviewsEntry.COLUMN_REVIEW_TIME,reviewTimeDescription);
+                    reviewValues.put(PlacesContract.PlaceReviewsEntry.COLUMN_REVIEW_DESCRIPTION,reviewDescription);
+                   cVVector.add(reviewValues);
+                }
+                int inserted = 0;
+                // add to database
+                if ( cVVector.size() > 0 ) {
+                    // BulkInsert to add the reviewsEntries to the database.
+                    ContentValues[] cvArray = new ContentValues[cVVector.size()];
+                    cVVector.toArray(cvArray);
+                    inserted = context.getContentResolver().bulkInsert(PlacesContract.PlaceReviewsEntry.CONTENT_URI, cvArray);
+                }
+               // Log.d(TAG, " Complete task. " + inserted + " Inserted");
+            }
 
         } catch (JSONException e) {
            // Log.e(TAG, e.getMessage(), e);

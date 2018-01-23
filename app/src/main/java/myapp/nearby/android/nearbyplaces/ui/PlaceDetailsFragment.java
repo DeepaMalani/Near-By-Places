@@ -1,6 +1,7 @@
 package myapp.nearby.android.nearbyplaces.ui;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -10,12 +11,12 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.app.ShareCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,10 +24,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
@@ -48,6 +49,8 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
     private static final int PLACE_DETAILS_LOADER_ID = 0;
     public static String strSeparator = "__,__";
     public String mPlaceId = "";
+    @BindView(R.id.scrollview)
+    NestedScrollView mScrollView;
     @BindView(R.id.lable_phone_number)
     TextView mLabelPhoneNumber;
     @BindView(R.id.linear_layout_call)
@@ -72,10 +75,16 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
     LinearLayout mLinearLayoutHours;
     @BindView(R.id.lable_hours)
     TextView mTextViewHours;
+    @BindView(R.id.opening_hours_divider)
+    View mOpeningHoursView;
+    @BindView(R.id.text_view_review_header)
+    TextView mTextViewReviewHeader;
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
     @BindView(R.id.fab)
     FloatingActionButton mFabShare;
+    @BindView(R.id.layout_container_review)
+    LinearLayout mReviewLayout;
     String mUrl;
     String mWebsite;
     private String mPhoto_reference;
@@ -83,7 +92,8 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
     private String mPlaceName;
     private Unbinder unbinder;
     private boolean mTwoPane = false;
-    private GoogleApiClient mGoogleApiClient;
+
+    private static final int REQUEST_CALL_PHONE = 100;
 
     public PlaceDetailsFragment() {
         super();
@@ -113,6 +123,7 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
                 @Override
                 public void onClick(View view) {
                     getActivity().finish();
+
                 }
             });
         }
@@ -121,16 +132,7 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
         }
         mCollapsingToolbar.setTitle(mPlaceName);
 
-        mFabShare.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(getActivity())
-                        .setType("text/plain")
-                        .setText(getString(R.string.share_text) + " " + mPlaceName)
-                        .getIntent(), getString(R.string.action_share)));
-            }
-        });
 
         return rootView;
     }
@@ -206,12 +208,14 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Uri placeDetailsUri = PlacesContract.PlaceDetailEntry.CONTENT_URI;
+
+
+        Uri placeDetailsUri = PlacesContract.PlaceReviewsEntry.buildPlaceDetailsWithReviews(mPlaceId);
         return new CursorLoader(
                 getActivity(),
                 placeDetailsUri,
                 null,
-                PlacesContract.PlaceDetailEntry.COLUMN_PLACE_ID + " = ?",
+                null,
                 new String[]{mPlaceId},
                 null);
 
@@ -220,117 +224,175 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 
-
         int length = cursor.getCount();
-        if (length != 0) {
-            cursor.moveToFirst();
-            int indexPhoneNumber = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_PHONE_NUMBER);
-            int indexOpeningHours = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_OPENING_HOURS);
-            // int indexRating = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_RATING);
-            int indexWebsite = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_WEBSITE);
-            int indexUrl = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_URL);
+        LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            final String phoneNumber = cursor.getString(indexPhoneNumber);
-            //  double rating = cursor.getDouble(indexRating);
-            String website = cursor.getString(indexWebsite);
-            String url = cursor.getString(indexUrl);
+        if (length == 0) {
 
-            String strOpeningHours = cursor.getString(indexOpeningHours);
-            if (!strOpeningHours.equals("")) {
-                LayoutParams lparams = new LayoutParams(
-                        LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-
-                String[] openingHours = convertStringToArray(strOpeningHours);
-                for (final String hour : openingHours) {
-                    // fill in opening hours dynamically here
-
-                    TextView tv = new TextView(getActivity());
-                    tv.setLayoutParams(lparams);
-                    tv.setText(hour);
-                    mLinearLayoutHours.addView(tv);
-
-                }
-            } else
-                mTextViewHours.setVisibility(View.GONE);
-
-
-            if (phoneNumber.equals("")) {
-                mLabelPhoneNumber.setVisibility(View.GONE);
-                mPhoneNumberView.setVisibility(View.GONE);
-                mLinearLayoutCall.setVisibility(View.GONE);
-
-            } else {
-                mTextViewPhoneNumber.setText(phoneNumber);
-                mLinearLayoutCall.setVisibility(View.VISIBLE);
-                mLinearLayoutCall.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent callIntent = new Intent(Intent.ACTION_CALL);
-                        callIntent.setData(Uri.parse("tel:" + phoneNumber));
-
-                        if (ActivityCompat.checkSelfPermission(getActivity(),
-                                Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                            return;
-                        }
-                        startActivity(callIntent);
-                    }
-                });
-            }
-
-            if (website.equals("")) {
-                mLinearLayoutWebsite.setVisibility(View.GONE);
-                mWebsite = "";
-                mWebsiteView.setVisibility(View.GONE);
-            } else {
-                mWebsite = website;
-                mLinearLayoutWebsite.setVisibility(View.VISIBLE);
-                mTextViewWebsite.setText(website);
-                mLinearLayoutWebsite.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-
-                        Intent i = new Intent(Intent.ACTION_VIEW);
-                        i.setData(Uri.parse(mWebsite));
-
-                       //Check if intent can be handled from activity
-                        PackageManager packageManager = getActivity().getPackageManager();
-                        if (i.resolveActivity(packageManager) != null) {
-                            startActivity(i);
-                        } else {
-                            return;
-                        }
-                    }
-                });
-
-            }
-
-            if (url.equals("")) {
-                mLinearLayoutDirections.setVisibility(View.GONE);
-            } else {
-                mUrl = url;
-                mLinearLayoutDirections.setVisibility(View.VISIBLE);
-                mLinearLayoutDirections.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-
-                        Intent i = new Intent(Intent.ACTION_VIEW);
-                        i.setData(Uri.parse(mUrl));
-
-                        //Check if intent can be handled from activity
-                        PackageManager packageManager = getActivity().getPackageManager();
-                        if (i.resolveActivity(packageManager) != null) {
-                            startActivity(i);
-                        } else {
-                            return;
-                        }
-
-                    }
-                });
-            }
-
+            mScrollView.setVisibility(View.GONE);
+            mFabShare.setVisibility(View.GONE);
 
         }
+        else {
+            mScrollView.setVisibility(View.VISIBLE);
+            mFabShare.setVisibility(View.VISIBLE);
 
+            if (cursor.moveToFirst()) {
+
+                // cursor.moveToFirst();
+                int indexPhoneNumber = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_PHONE_NUMBER);
+                int indexOpeningHours = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_OPENING_HOURS);
+                // int indexRating = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_RATING);
+                int indexWebsite = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_WEBSITE);
+                int indexUrl = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_URL);
+
+                final String phoneNumber = cursor.getString(indexPhoneNumber);
+                //  double rating = cursor.getDouble(indexRating);
+                String website = cursor.getString(indexWebsite);
+                final String url = cursor.getString(indexUrl);
+
+                String strOpeningHours = cursor.getString(indexOpeningHours);
+                if (!strOpeningHours.equals("")) {
+                    LayoutParams lparams = new LayoutParams(
+                            LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+
+                    String[] openingHours = convertStringToArray(strOpeningHours);
+                    for (final String hour : openingHours) {
+                        // fill in opening hours dynamically here
+
+                        TextView tv = new TextView(getActivity());
+                        tv.setLayoutParams(lparams);
+                        tv.setText(hour);
+                        mLinearLayoutHours.addView(tv);
+
+                    }
+                } else {
+                    mTextViewHours.setVisibility(View.GONE);
+                    mOpeningHoursView.setVisibility(View.GONE);
+
+                }
+
+
+                if (phoneNumber.equals("")) {
+                    mLabelPhoneNumber.setVisibility(View.GONE);
+                    mPhoneNumberView.setVisibility(View.GONE);
+                    mLinearLayoutCall.setVisibility(View.GONE);
+
+                } else {
+                    mTextViewPhoneNumber.setText(phoneNumber);
+                    mLinearLayoutCall.setVisibility(View.VISIBLE);
+                    mLinearLayoutCall.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+
+                            requestCallPhonePermission();
+                            Intent callIntent = new Intent(Intent.ACTION_CALL);
+                            callIntent.setData(Uri.parse("tel:" + phoneNumber));
+                            PackageManager packageManager = getActivity().getPackageManager();
+                            if (callIntent.resolveActivity(packageManager) != null) {
+                                startActivity(callIntent);
+                            } else {
+                                return;
+                            }
+                            startActivity(callIntent);
+
+                        }
+                    });
+                }
+
+
+                if (website.equals("")) {
+                    mLinearLayoutWebsite.setVisibility(View.GONE);
+                    mWebsite = "";
+                    mWebsiteView.setVisibility(View.GONE);
+                } else {
+                    mWebsite = website;
+                    mLinearLayoutWebsite.setVisibility(View.VISIBLE);
+                    mTextViewWebsite.setText(website);
+                    mLinearLayoutWebsite.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+
+                            Intent websiteIntent = new Intent(Intent.ACTION_VIEW);
+                            websiteIntent.setData(Uri.parse(mWebsite));
+
+                            //Check if intent can be handled from activity
+                            PackageManager packageManager = getActivity().getPackageManager();
+                            if (websiteIntent.resolveActivity(packageManager) != null) {
+                                startActivity(websiteIntent);
+                            } else {
+                                return;
+                            }
+                        }
+                    });
+
+                }
+
+                if (url.equals("")) {
+                    mLinearLayoutDirections.setVisibility(View.GONE);
+                } else {
+                    mUrl = url;
+                    mLinearLayoutDirections.setVisibility(View.VISIBLE);
+                    mLinearLayoutDirections.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+
+                            Intent i = new Intent(Intent.ACTION_VIEW);
+                            i.setData(Uri.parse(mUrl));
+
+                            //Check if intent can be handled from activity
+                            PackageManager packageManager = getActivity().getPackageManager();
+                            if (i.resolveActivity(packageManager) != null) {
+                                startActivity(i);
+                            } else {
+                                return;
+                            }
+
+                        }
+                    });
+
+                    mFabShare.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+
+                            Intent share = new Intent(android.content.Intent.ACTION_SEND);
+                            share.setType("text/plain");
+                            share.putExtra(Intent.EXTRA_SUBJECT, mPlaceName);
+                            share.putExtra(Intent.EXTRA_TEXT, url);
+                            startActivity(Intent.createChooser(share, "Share link!"));
+                        }
+                    });
+                }
+
+
+                do {
+                    String reviewAuthor = cursor.getString(cursor.getColumnIndex(PlacesContract.PlaceReviewsEntry.COLUMN_AUTHOR_NAME));
+                    String reviewText = cursor.getString(cursor.getColumnIndex(PlacesContract.PlaceReviewsEntry.COLUMN_REVIEW_DESCRIPTION));
+                    String reviewTime = cursor.getString(cursor.getColumnIndex(PlacesContract.PlaceReviewsEntry.COLUMN_REVIEW_TIME));
+                    float placeRating = cursor.getFloat(cursor.getColumnIndex(PlacesContract.PlaceReviewsEntry.COLUMN_RATINGS));
+
+                    View v = inflater.inflate(R.layout.review_list, null);
+
+                    // fill in any details dynamically here
+                    TextView textViewReviewAuthor = (TextView) v.findViewById(R.id.text_view_review_author);
+                    textViewReviewAuthor.setText(reviewAuthor);
+
+                    TextView textViewReviewText = (TextView) v.findViewById(R.id.text_view_review_text);
+                    textViewReviewText.setText(reviewText);
+
+                    //Set rating for rating bar
+                    RatingBar ratingBar = (RatingBar) v.findViewById(R.id.rating_bar);
+                    ratingBar.setRating(placeRating);
+
+                    TextView textViewReviewTime = (TextView) v.findViewById(R.id.text_view_review_time);
+                    textViewReviewTime.setText(reviewTime);
+
+
+                    mReviewLayout.addView(v);
+
+                } while (cursor.moveToNext());
+            }
+        }
     }
 
     @Override
@@ -361,5 +423,12 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
         currentState.putString(ViewNearByFragment.PLACE_NAME, mPlaceName);
     }
 
-
+    private void requestCallPhonePermission() {
+        String callPermission = Manifest.permission.CALL_PHONE;
+        int hasPermission = ContextCompat.checkSelfPermission(getActivity(), callPermission);
+        String[] permissions = new String[] { callPermission };
+        if (hasPermission != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(permissions, REQUEST_CALL_PHONE);
+        }
+    }
 }

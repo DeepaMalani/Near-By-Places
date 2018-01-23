@@ -2,10 +2,14 @@ package myapp.nearby.android.nearbyplaces.utilities;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.location.Location;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 
 import myapp.nearby.android.nearbyplaces.data.PlacesContract;
 
@@ -25,12 +29,13 @@ public final class OpenPlacesJsonUtils {
      * @param context
      * @throws JSONException
      */
-    public static boolean getPlacesDataFromJson(String placeJsonStr, Context context, String type)
+    public static boolean getPlacesDataFromJson(String placeJsonStr, Context context, String type,double currentLatitude,double currentLongitude)
             throws JSONException {
 
 
         // These are the names of the JSON objects that need to be extracted.
         int totalRecords = 0;
+        final String NEXT_PAGE_TOKEN = "next_page_token";
         final String PLACES_RESULTS = "results";
         final String PLACE_ID = "place_id";
         final String NAME = "name";
@@ -40,14 +45,25 @@ public final class OpenPlacesJsonUtils {
         final String OPEN_NOW = "open_now";
         final String PHOTOS = "photos";
         final String PHOTO_REFERENCE = "photo_reference";
-        final String ICON = "icon";
+        final String  GEOMETRY = "geometry";
+        final String LOCATION = "location";
+        final String LAT = "lat";
+        final String LNG = "lng";
+
 
         try {
             JSONObject placesJson = new JSONObject(placeJsonStr);
+
+            if(placesJson.has(NEXT_PAGE_TOKEN))
+            {
+                String pageToken = placesJson.getString(NEXT_PAGE_TOKEN);
+                //Log.d(TAG,"PageToken: " + pageToken);
+            }
+
             JSONArray placesArray = placesJson.getJSONArray(PLACES_RESULTS);
 
             // delete  old data based on place type
-            context.getContentResolver().delete(PlacesContract.PlaceEntry.CONTENT_URI, PlacesContract.PlaceEntry.COLUMN_PLACE_TYPE + " = ?", new String[]{type});
+            //context.getContentResolver().delete(PlacesContract.PlaceEntry.CONTENT_URI, PlacesContract.PlaceEntry.COLUMN_PLACE_TYPE + " = ?", new String[]{type});
 
 
             totalRecords = placesArray.length();
@@ -61,8 +77,25 @@ public final class OpenPlacesJsonUtils {
                     double rating;
                     String photo_reference;
                     String icon;
-                    // Get the JSON object representing the movie result
+                    double placeLat;
+                    double placeLNG;
+                    double distance = 0.0;
+                    // Get the JSON object representing the place result
                     JSONObject resultPlace = placesArray.getJSONObject(i);
+
+                    //Get place location
+                    if(resultPlace.has(GEOMETRY))
+                    {
+                        JSONObject resultGeometry = resultPlace.getJSONObject(GEOMETRY);
+                        if(resultGeometry.has(LOCATION))
+                        {
+                            JSONObject resultLocation = resultGeometry.getJSONObject(LOCATION);
+                            placeLat = resultLocation.getDouble(LAT);
+                            placeLNG = resultLocation.getDouble(LNG);
+                            distance = getDistance(currentLatitude,currentLongitude,placeLat,placeLNG);
+                        }
+                    }
+
                     place_id = resultPlace.getString(PLACE_ID);
                     name = resultPlace.getString(NAME);
                     address = resultPlace.getString(ADDRESS);
@@ -85,7 +118,9 @@ public final class OpenPlacesJsonUtils {
                     } else {
                         photo_reference = "";
                     }
-                    icon = resultPlace.getString(ICON);
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    String currentDate = sdf.format(new Date(System.currentTimeMillis()));
+
                     //listPlace.add(new Places(type,name,address,open_now,rating,photo_reference,icon));
                     ContentValues placeContentValue = new ContentValues();
                     placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_PLACE_ID, place_id);
@@ -94,7 +129,11 @@ public final class OpenPlacesJsonUtils {
                     placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_ADDRESS, address);
                     placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_RATING, rating);
                     placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_PHOTO_REFERENCE, photo_reference);
-                    // placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_ICON_PATH,icon);
+                    placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_DISTANCE,distance);
+                    placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_CURRENT_LAT,currentLatitude);
+                    placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_CURRENT_LONG,currentLongitude);
+                    placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_CURRENT_DATE,currentDate);
+
 
 
                /* Insert our new  data into place ContentProvider */
@@ -114,4 +153,43 @@ public final class OpenPlacesJsonUtils {
 
     }
 
-}
+    public static String getNextPageTokenFromJson(String placeJsonStr)
+            throws JSONException {
+
+        final String NEXT_PAGE_TOKEN = "next_page_token";
+        String pageToken = "";
+        try {
+
+
+            JSONObject placesJson = new JSONObject(placeJsonStr);
+
+            if (placesJson.has(NEXT_PAGE_TOKEN)) {
+                 pageToken = placesJson.getString(NEXT_PAGE_TOKEN);
+
+            }
+        } catch (JSONException e) {
+
+            e.printStackTrace();
+        }
+        return pageToken;
+    }
+
+    private static double getDistance(double lat1,double long1,double lat2,double long2)
+    {
+        Location loc1 = new Location("");
+        loc1.setLatitude(lat1);
+        loc1.setLongitude(long1);
+
+        Location loc2 = new Location("");
+        loc2.setLatitude(lat2);
+        loc2.setLongitude(long2);
+
+        double distanceInMeters = loc1.distanceTo(loc2);
+        double distanceInMiles = distanceInMeters/1609.344;
+       // double distanceInKm = loc1.distanceTo(loc2)/1000;
+
+
+        return distanceInMiles;
+    }
+
+    }

@@ -24,14 +24,17 @@ public class PlacesTypeAdapter extends RecyclerView.Adapter<PlacesTypeAdapter.Pl
     private static PlaceAdapterOnClickHandler mClickHandler;
     private Context mContext;
     private String[] mImageTitle;
-    private String[] mPlaceValue;
+    private String[] mPlaceType;
+    private String[] mPlaceKeyword;
     private TypedArray mImageId;
 
-    public PlacesTypeAdapter(Context context, String[] imageTitle, TypedArray imageId, String[] placeValue) {
+
+    public PlacesTypeAdapter(Context context, String[] imageTitle, TypedArray imageId, String[] placeType,String[] placeKeyword) {
         mContext = context;
         mImageTitle = imageTitle;
         this.mImageId = imageId;
-        this.mPlaceValue = placeValue;
+        this.mPlaceType = placeType;
+        this.mPlaceKeyword = placeKeyword;
     }
 
     // Define the method that allows the parent activity  to define the listener
@@ -80,7 +83,7 @@ public class PlacesTypeAdapter extends RecyclerView.Adapter<PlacesTypeAdapter.Pl
      * The interface that receives onClick messages.
      */
     public interface PlaceAdapterOnClickHandler {
-        void onClick(String placeTitle, String placeValue);
+        void onClick(String placeTitle, String placeType,String placeKeyword);
     }
 
     /**
@@ -103,8 +106,9 @@ public class PlacesTypeAdapter extends RecyclerView.Adapter<PlacesTypeAdapter.Pl
         public void onClick(View view) {
             int adapterPosition = getAdapterPosition();
             String placeTitle = mImageTitle[adapterPosition];
-            String placeValue = mPlaceValue[adapterPosition];
-            mClickHandler.onClick(placeTitle, placeValue);
+            String placeType = mPlaceType[adapterPosition];
+            String placeKeyword = mPlaceKeyword[adapterPosition];
+            mClickHandler.onClick(placeTitle, placeType,placeKeyword);
         }
     }
 }

@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import myapp.nearby.android.nearbyplaces.R;
 import myapp.nearby.android.nearbyplaces.ui.ViewNearByPlacesActivity;
 import myapp.nearby.android.nearbyplaces.utilities.NetworkUtils;
 
@@ -72,6 +73,19 @@ public class ViewPlacesAdapter extends RecyclerView.Adapter<ViewPlacesAdapter.Vi
             viewPlacesAdapterViewHolder.mRatingTextView.setText(String.valueOf(placeRating));
         else
             viewPlacesAdapterViewHolder.mRatingTextView.setText("");
+
+
+
+        double placeDistance = mCursor.getFloat(ViewNearByPlacesActivity.INDEX_DISTANCE);
+
+       // Log.d("ViewPlacesAdapter","Name: " + placeName + "Distance: " + String.valueOf(placeDistance));
+
+        double roundOff = Math.round(placeDistance * 10.0) / 10.0;
+
+        if (placeDistance != 0.0)
+            viewPlacesAdapterViewHolder.mDistanceTextView.setText(String.valueOf( roundOff) + " mi");
+        else
+            viewPlacesAdapterViewHolder.mDistanceTextView.setText("");
 
         String photoReference = mCursor.getString(ViewNearByPlacesActivity.INDEX_PHOTO_REFERENCE);
         //String iconPath = mCursor.getString(ViewNearByPlacesActivity.INDEX_ICON_PATH);
@@ -138,6 +152,7 @@ public class ViewPlacesAdapter extends RecyclerView.Adapter<ViewPlacesAdapter.Vi
         private final ImageView mPlaceImage;
         private final TextView mRatingTextView;
         private final RatingBar mRatingBar;
+        private final TextView mDistanceTextView;
 
         public ViewPlacesAdapterViewHolder(View itemView) {
             super(itemView);
@@ -148,6 +163,7 @@ public class ViewPlacesAdapter extends RecyclerView.Adapter<ViewPlacesAdapter.Vi
             mPlaceImage = (ImageView) itemView.findViewById(myapp.nearby.android.nearbyplaces.R.id.image_view_place);
             mRatingTextView = (TextView) itemView.findViewById(myapp.nearby.android.nearbyplaces.R.id.text_view_rating);
             mRatingBar = (RatingBar) itemView.findViewById(myapp.nearby.android.nearbyplaces.R.id.rating_bar);
+            mDistanceTextView = (TextView) itemView.findViewById(R.id.text_view_distance);
             itemView.setOnClickListener(this);
         }
 
@@ -155,7 +171,6 @@ public class ViewPlacesAdapter extends RecyclerView.Adapter<ViewPlacesAdapter.Vi
         public void onClick(View view) {
 
             int adapterPosition = getAdapterPosition();
-
             mCursor.moveToPosition(adapterPosition);
             String placeId = mCursor.getString(ViewNearByPlacesActivity.INDEX_PLACE_ID);
             String placeName = mCursor.getString(ViewNearByPlacesActivity.INDEX_PLACE_NAME);
@@ -163,9 +178,7 @@ public class ViewPlacesAdapter extends RecyclerView.Adapter<ViewPlacesAdapter.Vi
             // String icon_path  = mCursor.getString(ViewNearByPlacesActivity.INDEX_ICON_PATH);
             mClickHandler.onClick(placeId, placeName, photo_reference);
 
-
         }
-
     }
 
 }
