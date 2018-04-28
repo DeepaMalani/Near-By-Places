@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 
+import myapp.nearby.android.nearbyplaces.R;
 import myapp.nearby.android.nearbyplaces.data.PlacesContract;
 
 /**
@@ -29,7 +30,7 @@ public final class OpenPlacesJsonUtils {
      * @param context
      * @throws JSONException
      */
-    public static boolean getPlacesDataFromJson(String placeJsonStr, Context context, String type,double currentLatitude,double currentLongitude)
+    public static String[] getPlacesDataFromJson(String placeJsonStr, Context context, String type,double currentLatitude,double currentLongitude)
             throws JSONException {
 
 
@@ -41,33 +42,33 @@ public final class OpenPlacesJsonUtils {
         final String NAME = "name";
         final String ADDRESS = "vicinity";
         final String RATING = "rating";
-        final String OPENING_HOURS = "opening_hours";
-        final String OPEN_NOW = "open_now";
         final String PHOTOS = "photos";
         final String PHOTO_REFERENCE = "photo_reference";
         final String  GEOMETRY = "geometry";
         final String LOCATION = "location";
         final String LAT = "lat";
         final String LNG = "lng";
-
-
+        final String ERROR_MESSAGE = "error_message";
+        String[] return_array= new String[2];
         try {
             JSONObject placesJson = new JSONObject(placeJsonStr);
 
-            if(placesJson.has(NEXT_PAGE_TOKEN))
+            if(placesJson.has(ERROR_MESSAGE))
             {
-                String pageToken = placesJson.getString(NEXT_PAGE_TOKEN);
-                //Log.d(TAG,"PageToken: " + pageToken);
+                //return context.getResources().getString(R.string.server_error);
+                return_array[0] = context.getResources().getString(R.string.server_error);;
             }
+            else {
+                //Get next page token
+                if(placesJson.has(NEXT_PAGE_TOKEN)) {
+                    return_array[1] = placesJson.getString(NEXT_PAGE_TOKEN);
 
-            JSONArray placesArray = placesJson.getJSONArray(PLACES_RESULTS);
-
-            // delete  old data based on place type
-            //context.getContentResolver().delete(PlacesContract.PlaceEntry.CONTENT_URI, PlacesContract.PlaceEntry.COLUMN_PLACE_TYPE + " = ?", new String[]{type});
-
-
-            totalRecords = placesArray.length();
-
+                }
+                else
+                    return_array[1] = "";
+                //Get results array
+                JSONArray placesArray = placesJson.getJSONArray(PLACES_RESULTS);
+                totalRecords = placesArray.length();
                 for (int i = 0; i < placesArray.length(); i++) {
 
                     String place_id;
@@ -76,7 +77,6 @@ public final class OpenPlacesJsonUtils {
                     boolean open_now;
                     double rating;
                     String photo_reference;
-                    String icon;
                     double placeLat;
                     double placeLNG;
                     double distance = 0.0;
@@ -84,15 +84,13 @@ public final class OpenPlacesJsonUtils {
                     JSONObject resultPlace = placesArray.getJSONObject(i);
 
                     //Get place location
-                    if(resultPlace.has(GEOMETRY))
-                    {
+                    if (resultPlace.has(GEOMETRY)) {
                         JSONObject resultGeometry = resultPlace.getJSONObject(GEOMETRY);
-                        if(resultGeometry.has(LOCATION))
-                        {
+                        if (resultGeometry.has(LOCATION)) {
                             JSONObject resultLocation = resultGeometry.getJSONObject(LOCATION);
                             placeLat = resultLocation.getDouble(LAT);
                             placeLNG = resultLocation.getDouble(LNG);
-                            distance = getDistance(currentLatitude,currentLongitude,placeLat,placeLNG);
+                            distance = getDistance(currentLatitude, currentLongitude, placeLat, placeLNG);
                         }
                     }
 
@@ -103,12 +101,7 @@ public final class OpenPlacesJsonUtils {
                         rating = resultPlace.getDouble(RATING);
                     else
                         rating = 0;
-                    if (resultPlace.has(OPENING_HOURS)) {
-                        JSONObject resultOpening_Hours = resultPlace.getJSONObject(OPENING_HOURS);
-                        open_now = resultOpening_Hours.getBoolean(OPEN_NOW);
-                    } else {
-                        open_now = false;
-                    }
+
                     if (resultPlace.has(PHOTOS)) {
 
                         JSONArray photo_array = resultPlace.getJSONArray(PHOTOS);
@@ -129,10 +122,10 @@ public final class OpenPlacesJsonUtils {
                     placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_ADDRESS, address);
                     placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_RATING, rating);
                     placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_PHOTO_REFERENCE, photo_reference);
-                    placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_DISTANCE,distance);
-                    placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_CURRENT_LAT,currentLatitude);
-                    placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_CURRENT_LONG,currentLongitude);
-                    placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_CURRENT_DATE,currentDate);
+                    placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_DISTANCE, distance);
+                    placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_CURRENT_LAT, currentLatitude);
+                    placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_CURRENT_LONG, currentLongitude);
+                    placeContentValue.put(PlacesContract.PlaceEntry.COLUMN_CURRENT_DATE, currentDate);
 
 
 
@@ -140,17 +133,20 @@ public final class OpenPlacesJsonUtils {
                     context.getContentResolver().insert(PlacesContract.PlaceEntry.CONTENT_URI, placeContentValue);
 
                 }
-
+            }
+            if (totalRecords==0)
+                return_array[0] = context.getResources().getString(R.string.no_data);
+                //return context.getResources().getString(R.string.no_data);
+            else
+                return_array[0] = "";
 
         } catch (JSONException e) {
 
             e.printStackTrace();
+            //return e.getMessage().toString();
+            return_array[0] = e.getMessage().toString();
         }
-        if (totalRecords==0)
-            return false;
-        else
-            return true;
-
+        return return_array;
     }
 
     public static String getNextPageTokenFromJson(String placeJsonStr)

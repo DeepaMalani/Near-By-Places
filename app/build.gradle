@@ -15,8 +15,8 @@ android {
         applicationId "myapp.nearby.android.nearbyplaces"
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        versionCode 12
+        versionName "2.3"
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -28,8 +28,8 @@ android {
         }
     }
     buildTypes.each {
-        it.buildConfigField "String", 'places_api_key', "\"AIzaSyBJmJCow2-4xd2GXYBCIoKtvNX7G2JkvGk\""
-        // it.buildConfigField "String", 'places_api_key', "\"AIzaSyBR5WLfivo5UDfhrwF_mQ0nk2MMG8f0Brk\""
+        it.buildConfigField "String", 'places_api_key', "\"AIzaSyDAvqWI0Ec7TqJ0p7-w1SOBJE0Z1P-Cpj8\""
+        // it.buildConfigField "String", 'places_api_key', "\"AIzaSyCgh-vas1BacMeZOFSkp8VJ1mNJt7P6ruk\""
     }
 }
 repositories {
@@ -47,27 +47,29 @@ dependencies {
     }
     //Place types java library
     compile project(':placetypesources')
+    // RecyclerView library
+    // CardView library
+    //Picasso library
+    //Google play service location /
+    //Butterknife library for views
+    //Google play service ad library
+    // compile 'com.google.android.gms:play-services-ads:11.0.4'
+    // dependencies required to use Espresso-Intents
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support:design:25.3.1'
-    // RecyclerView library
     compile 'com.android.support:recyclerview-v7:25.3.1'
-    // CardView library
     compile 'com.android.support:cardview-v7:25.3.1'
-    //Picasso library
     compile 'com.squareup.picasso:picasso:2.5.2'
-    //Google play service location /
     compile 'com.google.android.gms:play-services-location:11.0.4'
-    //Butterknife library for views
+    compile 'com.google.android.gms:play-services-places:11.0.4'
     compile 'com.jakewharton:butterknife:8.6.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    //Google play service ad library
-   // compile 'com.google.android.gms:play-services-ads:11.0.4'
     testCompile 'junit:junit:4.12'
-    annotationProcessor 'net.simonvt.schematic:schematic-compiler:0.6.3'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
     androidTestCompile 'com.android.support:support-annotations:25.3.1'
-    // dependencies required to use Espresso-Intents
     androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2.2'
     androidTestCompile 'com.android.support.test:rules:0.5'
     androidTestCompile 'com.android.support.test:runner:0.5'
+    annotationProcessor 'net.simonvt.schematic:schematic-compiler:0.6.3'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
+    compile 'com.android.support:preference-v7:25.3.1'
 }

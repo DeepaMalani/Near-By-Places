@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import myapp.nearby.android.nearbyplaces.R;
 
 import static myapp.nearby.android.nearbyplaces.ui.ViewNearByFragment.PHOTO_REFERENCE;
+import static myapp.nearby.android.nearbyplaces.ui.ViewNearByFragment.PLACE_Address;
 import static myapp.nearby.android.nearbyplaces.ui.ViewNearByFragment.PLACE_ID;
 import static myapp.nearby.android.nearbyplaces.ui.ViewNearByFragment.PLACE_NAME;
 
@@ -56,11 +57,11 @@ public class ViewNearByPlacesActivity extends AppCompatActivity implements ViewN
     }
 
     @Override
-    public void replaceFirstRecordFragment(String placeId, String placeName, String photo_reference) {
+    public void replaceFirstRecordFragment(String placeId, String placeName, String photo_reference,String placeAddress) {
 
         if (mTwoPane && mSavedInstance) {
             PlaceDetailsFragment newFragment = new PlaceDetailsFragment();
-            newFragment.setPlaceDetails(placeId, placeName, photo_reference);
+            newFragment.setPlaceDetails(placeId, placeName, photo_reference,placeAddress);
             newFragment.setTwoPane(true);
             // Replace the old  fragment with a new one
             getSupportFragmentManager().beginTransaction()
@@ -90,14 +91,14 @@ public class ViewNearByPlacesActivity extends AppCompatActivity implements ViewN
     }
 
     @Override
-    public void onPlaceNameSelected(String placeId, String placeName, String photo_reference) {
+    public void onPlaceNameSelected(String placeId, String placeName, String photo_reference,String placeAddress) {
 
         // Handle the two-pane case and replace existing fragments right when a new place name is selected from the master list
         if (mTwoPane) {
             // Create two=pane interaction
 
             PlaceDetailsFragment newFragment = new PlaceDetailsFragment();
-            newFragment.setPlaceDetails(placeId, placeName, photo_reference);
+            newFragment.setPlaceDetails(placeId, placeName, photo_reference,placeAddress);
             newFragment.setTwoPane(true);
             // Replace the old  fragment with a new one
             getSupportFragmentManager().beginTransaction()
@@ -108,6 +109,7 @@ public class ViewNearByPlacesActivity extends AppCompatActivity implements ViewN
             intent.putExtra(PLACE_ID, placeId);
             intent.putExtra(PLACE_NAME, placeName);
             intent.putExtra(PHOTO_REFERENCE, photo_reference);
+            intent.putExtra(PLACE_Address,placeAddress);
             startActivity(intent);
         }
 

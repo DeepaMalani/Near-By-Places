@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:id="@+id/place_details_layout"
     android:orientation="vertical">
 
     <android.support.design.widget.AppBarLayout
@@ -77,6 +78,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:id="@+id/linear_layout_place_detail"
             android:orientation="vertical">
             <!--Linear layout for call-->
             <LinearLayout
@@ -206,7 +208,7 @@
                 android:layout_height="2px"
                 android:layout_marginTop="8dp"
                 android:background="@android:color/black" />
-
+            <!--Header text view for hours-->
             <TextView
                 android:id="@+id/lable_hours"
                 android:layout_width="wrap_content"
@@ -228,11 +230,34 @@
                 android:orientation="vertical">
 
             </LinearLayout>
+            <View
+                android:id="@+id/opening_hours_divider"
+                android:layout_width="match_parent"
+                android:layout_height="2px"
+                android:layout_marginTop="8dp"
+                android:background="@android:color/black" />
+            <!--Header text view for reviews-->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reviews"
+                android:paddingLeft="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:id="@+id/text_view_review_header"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+                android:textColor="@android:color/black"/>
+            <!--Linear layout for reviews-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/layout_review"
+                android:paddingLeft="16dp"
+                android:orientation="vertical"></LinearLayout>
 
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>
-
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

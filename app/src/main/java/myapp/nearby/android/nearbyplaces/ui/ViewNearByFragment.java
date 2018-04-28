@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.location.Address;
-import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,18 +15,12 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -49,21 +41,24 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
 
     public static final String PLACE_ID = "place_id";
     public static final String PLACE_NAME = "place_name";
-
     public static final String PHOTO_REFERENCE = "photo_reference";
+    public static final String PLACE_Address = "place_address";
     public static final String ICON_PATH = "icon_path";
     private static final String TAG = ViewNearByFragment.class.getSimpleName();
     private static final int PLACE_LOADER_ID = 0;
-    private int mNumberOfRecords = 0;
     public static String PLACE_ID_PREF_NAME = "place_id_pref";
     final int WHAT = 1;
     public String mfirstPlaceId;
     public String mfirstPlaceName;
     public String mfirstPhoto_reference;
+    public String mFirstPlaceAddress;
     private boolean mSaveInstance = false;
+    public static String mNextPageToken;
 
     @BindView(R.id.recycler_view_near_by)
     RecyclerView mRecyclerView;
+//    @BindView(R.id.button_browse_more)
+//    Button mButtonBrowseMore;
 
     public static ProgressBar mLoadingIndicator;
     public static TextView mTextViewNoResults;
@@ -76,7 +71,7 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == WHAT)
-                mDisplayFirstRecord.replaceFirstRecordFragment(mfirstPlaceId, mfirstPlaceName, mfirstPhoto_reference);
+                mDisplayFirstRecord.replaceFirstRecordFragment(mfirstPlaceId, mfirstPlaceName, mfirstPhoto_reference,mFirstPlaceAddress);
 
         }
     };
@@ -99,10 +94,13 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
         View rootView = inflater.inflate(R.layout.fragment_view_near_by, container, false);
         ButterKnife.bind(this, rootView);
 
-
         if (savedInstanceState != null) {
             mSaveInstance = savedInstanceState.getBoolean("SaveInstance");
+            mNextPageToken = savedInstanceState.getString("NextPageToken");
+
         }
+        else
+            mNextPageToken = "";
 
         mLoadingIndicator = (ProgressBar) rootView.findViewById(R.id.pb_loading_indicator);
         mTextViewNoResults = (TextView) rootView.findViewById(R.id.text_view_no_result);
@@ -127,10 +125,16 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
             mRecyclerView.setAdapter(mViewPlacesAdapter);
             mViewPlacesAdapter.setOnItemClickListener(new ViewPlacesAdapter.ViewPlacesAdapterOnClickHandler() {
                 @Override
-                public void onClick(String placeId, String placeName, String photo_reference) {
+                public void onClick(String placeId, String placeName, String photo_reference, String placeAddress) {
                     // Trigger the callback method and pass in the position that was clicked
-                    mCallback.onPlaceNameSelected(placeId, placeName, photo_reference);
+                    mCallback.onPlaceNameSelected(placeId, placeName, photo_reference,placeAddress);
                     savePlaceDetails(placeId, placeName, photo_reference);
+                }
+
+                @Override
+                public void viewMorePlacesClick(String nextPageToken) {
+                    getNextPageData(nextPageToken);
+                   // Toast.makeText(getActivity(),"Welcome",Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -139,77 +143,21 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
         //Set activity title
         getActivity().setTitle(mTitle);
 
-
-
-        //Fetch data if it's not already inserted in database.
-        Cursor cursor = getActivity().getContentResolver().query
-                (PlacesContract.PlaceEntry.CONTENT_URI,
-                        null,
-                        PlacesContract.PlaceEntry.COLUMN_CURRENT_LAT + " = ? AND " +
-                                PlacesContract.PlaceEntry.COLUMN_CURRENT_LONG + " = ? AND " +
-                                PlacesContract.PlaceEntry.COLUMN_PLACE_TYPE + " = ? ",
-                        new String[]{String.valueOf(mLatitude), String.valueOf(mLongitude), mPlaceType},
-                        null);
-
-        int countRows = cursor.getCount();
-
-        if(countRows > 0)
-        {
-            cursor.moveToFirst();
-            String placeDate = cursor.getString(cursor.getColumnIndex(PlacesContract.PlaceEntry.COLUMN_CURRENT_DATE));
-
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            String currentDate = sdf.format(new Date(System.currentTimeMillis()));
-
-            if (placeDate.equals(currentDate)) {
-               mDataDate = true;
-            }
-        }
-
-        if (countRows == 0) {
-
+        /* Load the  data if phone is connected to internet. */
             if (NetworkUtils.isOnline(getActivity())) {
-
-               /* Load the  data if phone is connected to internet. */
                 if (!mSaveInstance) {
-                    FetchPlaces places = new FetchPlaces(getActivity(), mPlaceType, mPlaceKeyword, mLocation, mLatitude, mLongitude);
-                    places.execute();
-                }
+                        FetchPlaces places = new FetchPlaces(getActivity(), mPlaceType, mPlaceKeyword, mLocation, mLatitude, mLongitude,mNextPageToken,true);
+                        places.execute();
+                    }
             }
 
          else {
             showErrorMessage(getString(R.string.network_msg));
 
         }
-    }
         return rootView;
     }
 
-    private String getAddressFromLatLong(double latitude,double longitude) {
-        Geocoder geocoder;
-        List<Address> addresses;
-        String address = "";
-        geocoder = new Geocoder(getActivity(), Locale.getDefault());
-
-        try {
-
-            addresses = geocoder.getFromLocation(latitude, longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-            if (addresses != null) {
-                address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-                String city = addresses.get(0).getLocality();
-                String state = addresses.get(0).getAdminArea();
-                String country = addresses.get(0).getCountryName();
-                String postalCode = addresses.get(0).getPostalCode();
-                String knownName = addresses.get(0).getFeatureName();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.d(TAG, "Can not get address");
-
-        }
-        return address;
-    }
 
     private void savePlaceDetails(String placeId, String placeName, String photo_refrence) {
         SharedPreferences.Editor editor = getActivity().getSharedPreferences(PLACE_ID_PREF_NAME, MODE_PRIVATE).edit();
@@ -263,6 +211,7 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
     public void onSaveInstanceState(Bundle currentState) {
         super.onSaveInstanceState(currentState);
         currentState.putBoolean("SaveInstance", true);
+        currentState.putString("NextPageToken" , mNextPageToken);
     }
 
     /**
@@ -299,6 +248,7 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Uri placeUri = PlacesContract.PlaceEntry.CONTENT_URI;
+
         return new CursorLoader(getActivity(),
                 placeUri,
                 null,
@@ -313,18 +263,46 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
         mViewPlacesAdapter.swapCursor(data);
 
         if (data != null) {
-            mNumberOfRecords = data.getCount();
-            if (data.getCount() != 0) {
+              if (data.getCount() != 0) {
                 showPlacesDataView();
                 data.moveToFirst();
                 mfirstPlaceId = data.getString(ViewNearByPlacesActivity.INDEX_PLACE_ID);
                 mfirstPlaceName = data.getString(ViewNearByPlacesActivity.INDEX_PLACE_NAME);
                 mfirstPhoto_reference = data.getString(ViewNearByPlacesActivity.INDEX_PHOTO_REFERENCE);
-                handler.sendEmptyMessage(WHAT);
-            }
+                mFirstPlaceAddress = data.getString(ViewNearByPlacesActivity.INDEX_PLACE_ADDRESS);
+                  handler.sendEmptyMessage(WHAT);
+                  mViewPlacesAdapter.setNextPageToken(mNextPageToken);
+
+//                  if(!mNextPageToken.equals("")) {
+//                      mButtonBrowseMore.setVisibility(View.VISIBLE);
+//                      mButtonBrowseMore.setOnClickListener(new View.OnClickListener() {
+//                          @Override
+//                          public void onClick(View view) {
+//                              getNextPageData();
+//                          }
+//                      });
+//                  }
+//                  else
+//                      mButtonBrowseMore.setVisibility(View.GONE);
+
+              }
+        }
+
+    }
+    private void getNextPageData(String nextPageToken)
+    {
+        if (NetworkUtils.isOnline(getActivity())) {
+            FetchPlaces places = new FetchPlaces(getActivity(), mPlaceType, mPlaceKeyword, mLocation, mLatitude, mLongitude,nextPageToken,false);
+            places.execute();
+
+        }
+        else {
+            showErrorMessage(getString(R.string.network_msg));
 
         }
 
+
+      getLoaderManager().restartLoader(PLACE_LOADER_ID, null, this);
     }
 
     @Override
@@ -335,13 +313,13 @@ public class ViewNearByFragment extends Fragment implements LoaderManager.Loader
 
     // OnPlaceNameClickListener interface, calls a method in the host activity
     public interface OnPlaceNameClickListener {
-        void onPlaceNameSelected(String placeId, String placeName, String photo_reference);
+        void onPlaceNameSelected(String placeId, String placeName, String photo_reference,String placeAddress);
     }
 
 
     // OnPlaceNameClickListener interface, calls a method in the host activity
     public interface DisplayFirstRecord {
-        void replaceFirstRecordFragment(String placeId, String placeName, String photo_reference);
+        void replaceFirstRecordFragment(String placeId, String placeName, String photo_reference,String placeAddress);
     }
 
 

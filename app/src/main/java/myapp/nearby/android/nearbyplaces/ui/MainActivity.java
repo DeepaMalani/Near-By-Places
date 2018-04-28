@@ -21,6 +21,8 @@ import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ApiException;
@@ -47,6 +49,13 @@ import myapp.nearby.android.nearbyplaces.R;
 import myapp.nearby.android.nearbyplaces.adapter.PlacesTypeAdapter;
 
 public class MainActivity extends AppCompatActivity {
+
+
+    @BindView(R.id.text_view)
+    TextView textView;
+
+    @BindView(R.id.pb_loading_indicator)
+    ProgressBar mLoadingIndicator;
 
     private static final String TAG = MainActivity.class.getSimpleName();
   //  private static final int PERMISSIONS_REQUEST_COARSE_LOCATION = 111;
@@ -142,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(myapp.nearby.android.nearbyplaces.R.layout.activity_main);
         ButterKnife.bind(this);
 
+
         //Get the place type,keyword and titles using java library.
         PlacesTypesSource placesTypesSource = new PlacesTypesSource();
         mPlaceTitles = placesTypesSource.getPlaceTitles();
@@ -174,21 +184,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(String placeTitle, String placeType,String placeKeyword) {
 
-                Intent intent = new Intent(MainActivity.this, ViewNearByPlacesActivity.class);
-                intent.putExtra(TITLE, placeTitle);
-                intent.putExtra(TYPE, placeType);
-                intent.putExtra(KEYWORD,placeKeyword);
+                if(mCurrentLocation!=null) {
 
-                //mLatitude = 37.399470;
-                //mLongitude = -122.0180951;
+                    Intent intent = new Intent(MainActivity.this, ViewNearByPlacesActivity.class);
+                    intent.putExtra(TITLE, placeTitle);
+                    intent.putExtra(TYPE, placeType);
+                    intent.putExtra(KEYWORD, placeKeyword);
 
-                intent.putExtra(LATITUDE,mLatitude);
-                intent.putExtra(LONGITUDE,mLongitude);
-                startActivity(intent);
+                    intent.putExtra(LATITUDE, mLatitude);
+                    intent.putExtra(LONGITUDE, mLongitude);
+                    startActivity(intent);
+                }
+                else
+                    Toast.makeText(MainActivity.this,getString(R.string.fetching_location),Toast.LENGTH_SHORT).show();
             }
         });
 
         mRequestingLocationUpdates = false;
+
         mLastUpdateTime = "";
          //Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
@@ -206,13 +219,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
-        if (!mRequestingLocationUpdates) {
-            mRequestingLocationUpdates = true;
+        if (checkPermissions()) {
             startLocationUpdates();
+        } else if (!checkPermissions()) {
+            requestPermissions();
         }
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mRequestingLocationUpdates )
+            startLocationUpdates();
 
-
+        updateUI();
     }
 
     private int numberOfColumns() {
@@ -258,15 +277,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Sets up the location request. Android has two location request settings:
-     * {@code ACCESS_COARSE_LOCATION} and {@code ACCESS_FINE_LOCATION}. These settings control
-     * the accuracy of the current location. This sample uses ACCESS_FINE_LOCATION, as defined in
-     * the AndroidManifest.xml.
-     * <p/>
-     * When the ACCESS_FINE_LOCATION setting is specified, combined with a fast update
-     * interval (5 seconds), the Fused Location Provider API returns location updates that are
-     * accurate to within a few feet.
-     * <p/>
+     * Sets up the location request.
      * These settings are appropriate for mapping applications that show real-time location
      * updates.
      */
@@ -290,6 +301,7 @@ public class MainActivity extends AppCompatActivity {
      * Creates a callback for receiving location events.
      */
     private void createLocationCallback() {
+
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
@@ -315,12 +327,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+
         switch (requestCode) {
             // Check for the integer request code originally supplied to startResolutionForResult().
             case REQUEST_CHECK_SETTINGS:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         Log.i(TAG, "User agreed to make required location settings changes.");
+                        mRequestingLocationUpdates = true;
                         // Nothing to do. startLocationupdates() gets called in onResume again.
                         break;
                     case Activity.RESULT_CANCELED:
@@ -345,7 +360,6 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
                         Log.i(TAG, "All location settings are satisfied.");
-
                         //noinspection MissingPermission
                         mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                                 mLocationCallback, Looper.myLooper());
@@ -397,21 +411,23 @@ public class MainActivity extends AppCompatActivity {
 //     * Sets the value of the UI fields for the location latitude, longitude and last update time.
 //     */
     private void updateLocationUI() {
+
+
         if (mCurrentLocation != null) {
             mLatitude =  mCurrentLocation.getLatitude();
             mLongitude = mCurrentLocation.getLongitude();
+           // textView.setText(String.valueOf(mLatitude));
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
 
         }
+      //  else
+            // textView.setText("Location not found");
     }
 //
 //    /**
 //     * Removes location updates from the FusedLocationApi.
 //     */
     private void stopLocationUpdates() {
-        if (!mRequestingLocationUpdates) {
-            Log.d(TAG, "stopLocationUpdates: updates never requested, no-op.");
-            return;
-        }
 
         // It is a good practice to remove location requests when the activity is in a paused or
         // stopped state. Doing so helps battery performance and is especially
@@ -424,20 +440,6 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
-    }
-//
-//    @Override
-    public void onResume() {
-        super.onResume();
-        // Within {@code onPause()}, we remove location updates. Here, we resume receiving
-        // location updates if the user has requested them.
-        if (mRequestingLocationUpdates && checkPermissions()) {
-            startLocationUpdates();
-        } else if (!checkPermissions()) {
-            requestPermissions();
-        }
-
-        updateUI();
     }
 
     @Override
@@ -519,17 +521,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        Log.i(TAG, "onRequestPermissionResult");
+        Log.i(TAG, "onRequestPermissionResult and mRequestingLocationUpdates" + String.valueOf(mRequestingLocationUpdates));
         if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
             if (grantResults.length <= 0) {
                 // If user interaction was interrupted, the permission request is cancelled and you
                 // receive empty arrays.
                 Log.i(TAG, "User interaction was cancelled.");
             } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (mRequestingLocationUpdates) {
+               // if (mRequestingLocationUpdates) {
                     Log.i(TAG, "Permission granted, updates requested, starting location updates");
                     startLocationUpdates();
-                }
+                //}
             } else {
                 // Permission denied.
 

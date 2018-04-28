@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string-array name="pref_units_options">
+        <item>@string/pref_units_label_mile</item>
+        <item>@string/pref_units_label_km</item>
+    </string-array>
+
+    <string-array name="pref_units_values">
+        <item>@string/pref_units_mile</item>
+        <item>@string/pref_units_km</item>
+    </string-array>
+
     <integer-array name="places_icon_array">
-        <item>@drawable/ic_local_airport</item>
         <item>@drawable/ic_atm</item>
         <item>@drawable/ic_bakery</item>
         <item>@drawable/ic_bank</item>
@@ -28,8 +37,6 @@
         <item>@drawable/ic_school</item>
         <item>@drawable/ic_train</item>
         <item>@drawable/ic_local_taxi</item>
-
-
 
     </integer-array>
 </resources>

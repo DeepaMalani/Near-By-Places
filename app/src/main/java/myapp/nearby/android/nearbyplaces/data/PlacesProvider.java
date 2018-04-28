@@ -125,7 +125,6 @@ public class PlacesProvider extends ContentProvider {
                         null,
                         sortOrder
                 );
-                int count = retCursor.getCount();
 
                 break;
             case PLACE_ID:
@@ -151,7 +150,6 @@ public class PlacesProvider extends ContentProvider {
                         null,
                         sortOrder
                 );
-                int countFavorites = retCursor.getCount();
 
                 break;
             case PLACE_DETAILS_ID:

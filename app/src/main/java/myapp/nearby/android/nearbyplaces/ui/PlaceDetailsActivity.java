@@ -8,7 +8,7 @@ public class PlaceDetailsActivity extends AppCompatActivity {
 
     public String mPlaceId = "";
     private String mPhoto_reference;
-    private String mIconPath;
+    private String mPlaceAddress;
     private String mPlaceName;
 
     @Override
@@ -22,14 +22,14 @@ public class PlaceDetailsActivity extends AppCompatActivity {
             mPlaceId = intent.getStringExtra(ViewNearByFragment.PLACE_ID);
             mPlaceName = intent.getStringExtra(ViewNearByFragment.PLACE_NAME);
             mPhoto_reference = intent.getStringExtra(ViewNearByFragment.PHOTO_REFERENCE);
-
+            mPlaceAddress = intent.getStringExtra(ViewNearByFragment.PLACE_Address);
         }
 
         // Only create new fragments when there is no previously saved state
         if (savedInstanceState == null) {
 
             PlaceDetailsFragment placeDetailsFragment = new PlaceDetailsFragment();
-            placeDetailsFragment.setPlaceDetails(mPlaceId, mPlaceName, mPhoto_reference);
+            placeDetailsFragment.setPlaceDetails(mPlaceId, mPlaceName, mPhoto_reference,mPlaceAddress);
             placeDetailsFragment.setTwoPane(false);
             // Replace the old  fragment with a new one
             getSupportFragmentManager().beginTransaction()

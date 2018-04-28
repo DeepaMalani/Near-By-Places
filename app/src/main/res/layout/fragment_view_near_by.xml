@@ -8,7 +8,7 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view_near_by"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:scrollbars="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
@@ -19,4 +19,19 @@
         android:layout_height="48dp"
         android:layout_gravity="center"
         android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/text_view_no_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Light.Widget.PopupMenu.Large"
+        android:visibility="invisible" />
+    <!--<Button-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/button_browse_more"-->
+        <!--android:layout_gravity="bottom"-->
+        <!--android:visibility="gone"-->
+        <!--android:text="@string/browse_more"/>-->
 </android.support.design.widget.CoordinatorLayout>

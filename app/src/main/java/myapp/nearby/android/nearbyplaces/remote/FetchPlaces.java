@@ -15,7 +15,7 @@ import myapp.nearby.android.nearbyplaces.utilities.OpenPlacesJsonUtils;
  * Created by Deep on 9/1/2017.
  */
 
-public class FetchPlaces extends AsyncTask<Void, Void, Boolean> {
+public class FetchPlaces extends AsyncTask<Void, Void, String[]> {
 
     private static final String TAG = FetchPlaces.class.getSimpleName();
     private Context mContext;
@@ -24,81 +24,60 @@ public class FetchPlaces extends AsyncTask<Void, Void, Boolean> {
     private String mLocation;
     private double mLatitude;
     private double mLongitude;
-    private boolean mTotalRecords;
-
-    public FetchPlaces(Context context, String type,String keyword, String location, double latitude,double longitude) {
+   // private String mMessage;
+   private  String[] mReturnData;
+    private String mNextPageToken;
+    private  boolean mIsFirstCall;
+    public FetchPlaces(Context context, String type,String keyword, String location, double latitude,double longitude,String nextPageToken,boolean isFirstCall) {
         mContext = context;
         mType = type;
         mKeyword = keyword;
         mLocation = location;
         mLatitude = latitude;
         mLongitude = longitude;
+        mNextPageToken = nextPageToken;
+        mIsFirstCall = isFirstCall;
     }
 
-//    @Override
-//    protected Void doInBackground(Void... voids) {
-//        URL placesRequestUrl = NetworkUtils.buildUrl(mContext, mType, mLocation);
-//        try {
-//            String jsonPlacesResponse = NetworkUtils
-//                    .getResponseFromHttpUrl(placesRequestUrl);
-//
-//         mtTotalRecords = OpenPlacesJsonUtils.getPlacesDataFromJson(jsonPlacesResponse, mContext, mType);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//        return null;
-//    }
+
 
     @Override
-    protected Boolean doInBackground(Void... voids) {
-        URL placesRequestUrl = NetworkUtils.buildUrl( mType,mKeyword, mLocation);
-        try {
-
+    protected String[] doInBackground(Void... voids) {
+        if(mIsFirstCall)
             // delete  old data based on place type
             mContext.getContentResolver().delete(PlacesContract.PlaceEntry.CONTENT_URI, PlacesContract.PlaceEntry.COLUMN_PLACE_TYPE + " = ?", new String[]{mType});
+
+        URL placesRequestUrl;
+        if(mNextPageToken.equals(""))
+            placesRequestUrl = NetworkUtils.buildUrl(mType, mKeyword, mLocation);
+        else
+            placesRequestUrl = NetworkUtils.buildUrlWithNextPageToken(mType,mKeyword,mLocation,mNextPageToken);
+        try {
+
 
             String jsonPlacesResponse = NetworkUtils
                     .getResponseFromHttpUrl(placesRequestUrl);
 
-            String nextPageToken = OpenPlacesJsonUtils.getNextPageTokenFromJson(jsonPlacesResponse);
-
-//            if(!nextPageToken.equals(""))
-//            {
-//                //Log.d(TAG, "NextPageToken: " + nextPageToken);
-//
-//                URL nextPageplacesRequestUrl = NetworkUtils.buildUrlWithNextPageToken( mType,mKeyword, mLocation,nextPageToken);
-//
-//
-//                Thread.sleep(2000);
-//                         /*Since the token can be used after a short time it has been  generated*/
-//
-//                String jsonPlacesResponse2 = NetworkUtils
-//                        .getResponseFromHttpUrl(nextPageplacesRequestUrl);
-//
-//                //Log.d(TAG,"response2: "+ jsonPlacesResponse2);
-//
-//                mTotalRecords = OpenPlacesJsonUtils.getPlacesDataFromJson(jsonPlacesResponse2, mContext, mType,mLatitude,mLongitude);
-//            }
-
-            mTotalRecords = OpenPlacesJsonUtils.getPlacesDataFromJson(jsonPlacesResponse, mContext, mType,mLatitude,mLongitude);
+            mReturnData = OpenPlacesJsonUtils.getPlacesDataFromJson(jsonPlacesResponse, mContext, mType,mLatitude,mLongitude);
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+           // return e.getMessage().toString();
         }
-        return mTotalRecords;
+        return mReturnData;
     }
 
 
     @Override
-    protected void onPostExecute(Boolean result) {
+    protected void onPostExecute(String[] resultMessage) {
+        if(resultMessage!=null) {
+            if (!resultMessage[0].equals("")) {
 
-     mTotalRecords = result.booleanValue();
-        if(!mTotalRecords) {
+                ViewNearByFragment.mLoadingIndicator.setVisibility(View.INVISIBLE);
+                ViewNearByFragment.mTextViewNoResults.setText(resultMessage[0]);
+                ViewNearByFragment.mTextViewNoResults.setVisibility(View.VISIBLE);
+            }
 
-//            ViewNearByFragment.mLoadingIndicator.setVisibility(View.INVISIBLE);
-//            ViewNearByFragment.mTextViewNoResults.setText(mContext.getString(R.string.no_data));
-//            ViewNearByFragment.mTextViewNoResults.setVisibility(View.VISIBLE);
+            ViewNearByFragment.mNextPageToken = resultMessage[1].toString();
         }
     }
 

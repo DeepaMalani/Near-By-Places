@@ -79,10 +79,6 @@ public class OpenPlaceDetailsJsonUtils {
             } else
                 openingHours = "";
 
-//            if (resultPlaceDetails.has(RATING))
-//                rating = resultPlaceDetails.getDouble(RATING);
-//            else
-//                rating = 0.0;
 
             if (resultPlaceDetails.has(WEBSITE))
                 website = resultPlaceDetails.getString(WEBSITE);
@@ -140,11 +136,11 @@ public class OpenPlaceDetailsJsonUtils {
                     cVVector.toArray(cvArray);
                     inserted = context.getContentResolver().bulkInsert(PlacesContract.PlaceReviewsEntry.CONTENT_URI, cvArray);
                 }
-               // Log.d(TAG, " Complete task. " + inserted + " Inserted");
+
             }
 
         } catch (JSONException e) {
-           // Log.e(TAG, e.getMessage(), e);
+
             e.printStackTrace();
         }
 

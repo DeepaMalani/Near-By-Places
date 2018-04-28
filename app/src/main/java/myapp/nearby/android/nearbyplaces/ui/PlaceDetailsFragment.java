@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
@@ -45,8 +46,7 @@ import myapp.nearby.android.nearbyplaces.utilities.NetworkUtils;
 
 public class PlaceDetailsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-
-    private static final int PLACE_DETAILS_LOADER_ID = 0;
+  private static final int PLACE_DETAILS_LOADER_ID = 0;
     public static String strSeparator = "__,__";
     public String mPlaceId = "";
     @BindView(R.id.scrollview)
@@ -83,12 +83,12 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
     Toolbar mToolbar;
     @BindView(R.id.fab)
     FloatingActionButton mFabShare;
-    @BindView(R.id.layout_container_review)
+    @BindView(R.id.layout_review)
     LinearLayout mReviewLayout;
     String mUrl;
     String mWebsite;
     private String mPhoto_reference;
-    private String mIconPath;
+    private String mPlaceAddress;
     private String mPlaceName;
     private Unbinder unbinder;
     private boolean mTwoPane = false;
@@ -114,6 +114,7 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
             mPlaceId = savedInstanceState.getString(ViewNearByFragment.PLACE_ID);
             mPlaceName = savedInstanceState.getString(ViewNearByFragment.PLACE_NAME);
             mPhoto_reference = savedInstanceState.getString(ViewNearByFragment.PHOTO_REFERENCE);
+            mPlaceAddress = savedInstanceState.getString(ViewNearByFragment.PLACE_Address);
         }
         if (mPhoto_reference != null)
             bindPlaceImage();
@@ -131,8 +132,6 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
             mToolbar.setNavigationIcon(null);
         }
         mCollapsingToolbar.setTitle(mPlaceName);
-
-
 
         return rootView;
     }
@@ -209,161 +208,194 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-
-        Uri placeDetailsUri = PlacesContract.PlaceReviewsEntry.buildPlaceDetailsWithReviews(mPlaceId);
-        return new CursorLoader(
-                getActivity(),
-                placeDetailsUri,
-                null,
-                null,
-                new String[]{mPlaceId},
-                null);
+        if (!mPlaceId.equals("")) {
+            Uri placeDetailsUri = PlacesContract.PlaceReviewsEntry.buildPlaceDetailsWithReviews(mPlaceId);
+            return new CursorLoader(
+                    getActivity(),
+                    placeDetailsUri,
+                    null,
+                    null,
+                    new String[]{mPlaceId},
+                    null);
+        }
+        else
+            return null;
 
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 
-        int length = cursor.getCount();
-        LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        if(cursor!=null) {
+            int length = cursor.getCount();
+            LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        if (length == 0) {
+            if (length == 0) {
 
-            mScrollView.setVisibility(View.GONE);
-            mFabShare.setVisibility(View.GONE);
+                //Display only direction, if place detail is not available.
+                //  mScrollView.setVisibility(View.GONE);
+                mFabShare.setVisibility(View.GONE);
 
-        }
-        else {
-            mScrollView.setVisibility(View.VISIBLE);
-            mFabShare.setVisibility(View.VISIBLE);
+                mLinearLayoutCall.setVisibility(View.GONE);
+                mPhoneNumberView.setVisibility(View.GONE);
 
-            if (cursor.moveToFirst()) {
+                mLinearLayoutWebsite.setVisibility(View.GONE);
+                mWebsiteView.setVisibility(View.GONE);
 
-                // cursor.moveToFirst();
-                int indexPhoneNumber = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_PHONE_NUMBER);
-                int indexOpeningHours = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_OPENING_HOURS);
-                // int indexRating = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_RATING);
-                int indexWebsite = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_WEBSITE);
-                int indexUrl = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_URL);
+                mTextViewHours.setVisibility(View.GONE);
+                mLinearLayoutHours.setVisibility(View.GONE);
+                mOpeningHoursView.setVisibility(View.GONE);
 
-                final String phoneNumber = cursor.getString(indexPhoneNumber);
-                //  double rating = cursor.getDouble(indexRating);
-                String website = cursor.getString(indexWebsite);
-                final String url = cursor.getString(indexUrl);
+                mTextViewReviewHeader.setVisibility(View.GONE);
+                mReviewLayout.setVisibility(View.GONE);
 
-                String strOpeningHours = cursor.getString(indexOpeningHours);
-                if (!strOpeningHours.equals("")) {
-                    LayoutParams lparams = new LayoutParams(
-                            LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                mLinearLayoutDirections.setVisibility(View.VISIBLE);
+                mLinearLayoutDirections.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        openPlaceDirection();
+                    }
+                });
+            } else {
+                // mScrollView.setVisibility(View.VISIBLE);
 
-                    String[] openingHours = convertStringToArray(strOpeningHours);
-                    for (final String hour : openingHours) {
-                        // fill in opening hours dynamically here
+                mFabShare.setVisibility(View.VISIBLE);
 
-                        TextView tv = new TextView(getActivity());
-                        tv.setLayoutParams(lparams);
-                        tv.setText(hour);
-                        mLinearLayoutHours.addView(tv);
+                if (cursor.moveToFirst()) {
+
+                    // cursor.moveToFirst();
+                    int indexPhoneNumber = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_PHONE_NUMBER);
+                    int indexOpeningHours = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_OPENING_HOURS);
+                    // int indexRating = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_RATING);
+                    int indexWebsite = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_WEBSITE);
+                    int indexUrl = cursor.getColumnIndex(PlacesContract.PlaceDetailEntry.COLUMN_URL);
+
+                    final String phoneNumber = cursor.getString(indexPhoneNumber);
+                    //  double rating = cursor.getDouble(indexRating);
+                    String website = cursor.getString(indexWebsite);
+                    final String url = cursor.getString(indexUrl);
+
+                    String strOpeningHours = cursor.getString(indexOpeningHours);
+                    if (strOpeningHours.equals("")) {
+                        mTextViewHours.setVisibility(View.GONE);
+                        mOpeningHoursView.setVisibility(View.GONE);
+                        mLinearLayoutHours.setVisibility(View.GONE);
+                    } else {
+                        mTextViewHours.setVisibility(View.VISIBLE);
+                        mOpeningHoursView.setVisibility(View.VISIBLE);
+                        mLinearLayoutHours.setVisibility(View.VISIBLE);
+
+                        LayoutParams lparams = new LayoutParams(
+                                LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+
+                        String[] openingHours = convertStringToArray(strOpeningHours);
+                        for (final String hour : openingHours) {
+                            // fill in opening hours dynamically here
+
+                            TextView tv = new TextView(getActivity());
+                            tv.setLayoutParams(lparams);
+                            tv.setText(hour);
+                            mLinearLayoutHours.addView(tv);
+
+                        }
 
                     }
-                } else {
-                    mTextViewHours.setVisibility(View.GONE);
-                    mOpeningHoursView.setVisibility(View.GONE);
-
-                }
 
 
-                if (phoneNumber.equals("")) {
-                    mLabelPhoneNumber.setVisibility(View.GONE);
-                    mPhoneNumberView.setVisibility(View.GONE);
-                    mLinearLayoutCall.setVisibility(View.GONE);
+                    if (phoneNumber.equals("")) {
+                        // mLabelPhoneNumber.setVisibility(View.GONE);
+                        mPhoneNumberView.setVisibility(View.GONE);
+                        mLinearLayoutCall.setVisibility(View.GONE);
 
-                } else {
-                    mTextViewPhoneNumber.setText(phoneNumber);
-                    mLinearLayoutCall.setVisibility(View.VISIBLE);
-                    mLinearLayoutCall.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
+                    } else {
+                        mTextViewPhoneNumber.setText(phoneNumber);
+                        mLinearLayoutCall.setVisibility(View.VISIBLE);
+                        mPhoneNumberView.setVisibility(View.VISIBLE);
+                        mLinearLayoutCall.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
 
-                            requestCallPhonePermission();
-                            Intent callIntent = new Intent(Intent.ACTION_CALL);
-                            callIntent.setData(Uri.parse("tel:" + phoneNumber));
-                            PackageManager packageManager = getActivity().getPackageManager();
-                            if (callIntent.resolveActivity(packageManager) != null) {
-                                startActivity(callIntent);
-                            } else {
-                                return;
+                                requestCallPhonePermission();
+                                Intent callIntent = new Intent(Intent.ACTION_CALL);
+                                callIntent.setData(Uri.parse("tel:" + phoneNumber));
+                                PackageManager packageManager = getActivity().getPackageManager();
+                                if (callIntent.resolveActivity(packageManager) != null) {
+                                    if (ActivityCompat.checkSelfPermission
+                                            (getActivity(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                                        return;
+                                    }
+                                    startActivity(callIntent);
+                                } else {
+                                    return;
+                                }
                             }
-                            startActivity(callIntent);
+                        });
+                    }
+                    if (website.equals("")) {
+                        mLinearLayoutWebsite.setVisibility(View.GONE);
+                        mWebsite = "";
+                        mWebsiteView.setVisibility(View.GONE);
+                    } else {
+                        mWebsite = website;
+                        mLinearLayoutWebsite.setVisibility(View.VISIBLE);
+                        mWebsiteView.setVisibility(View.VISIBLE);
 
-                        }
-                    });
-                }
+                        mTextViewWebsite.setText(website);
+                        mLinearLayoutWebsite.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
 
+                                Intent websiteIntent = new Intent(Intent.ACTION_VIEW);
+                                websiteIntent.setData(Uri.parse(mWebsite));
 
-                if (website.equals("")) {
-                    mLinearLayoutWebsite.setVisibility(View.GONE);
-                    mWebsite = "";
-                    mWebsiteView.setVisibility(View.GONE);
-                } else {
-                    mWebsite = website;
-                    mLinearLayoutWebsite.setVisibility(View.VISIBLE);
-                    mTextViewWebsite.setText(website);
-                    mLinearLayoutWebsite.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-
-                            Intent websiteIntent = new Intent(Intent.ACTION_VIEW);
-                            websiteIntent.setData(Uri.parse(mWebsite));
-
-                            //Check if intent can be handled from activity
-                            PackageManager packageManager = getActivity().getPackageManager();
-                            if (websiteIntent.resolveActivity(packageManager) != null) {
-                                startActivity(websiteIntent);
-                            } else {
-                                return;
+                                //Check if intent can be handled from activity
+                                PackageManager packageManager = getActivity().getPackageManager();
+                                if (websiteIntent.resolveActivity(packageManager) != null) {
+                                    startActivity(websiteIntent);
+                                } else {
+                                    return;
+                                }
                             }
-                        }
-                    });
+                        });
 
-                }
+                    }
 
-                if (url.equals("")) {
-                    mLinearLayoutDirections.setVisibility(View.GONE);
-                } else {
-                    mUrl = url;
-                    mLinearLayoutDirections.setVisibility(View.VISIBLE);
-                    mLinearLayoutDirections.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
+                    if (url.equals("")) {
+                        mLinearLayoutDirections.setVisibility(View.GONE);
+                    } else {
+                        mUrl = url;
+                        mLinearLayoutDirections.setVisibility(View.VISIBLE);
+                        mLinearLayoutDirections.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
 
-                            Intent i = new Intent(Intent.ACTION_VIEW);
-                            i.setData(Uri.parse(mUrl));
+                                Intent i = new Intent(Intent.ACTION_VIEW);
+                                i.setData(Uri.parse(mUrl));
 
-                            //Check if intent can be handled from activity
-                            PackageManager packageManager = getActivity().getPackageManager();
-                            if (i.resolveActivity(packageManager) != null) {
-                                startActivity(i);
-                            } else {
-                                return;
+                                //Check if intent can be handled from activity
+                                PackageManager packageManager = getActivity().getPackageManager();
+                                if (i.resolveActivity(packageManager) != null) {
+                                    startActivity(i);
+                                }
+
                             }
+                        });
 
-                        }
-                    });
+                        mFabShare.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
 
-                    mFabShare.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
+                                Intent share = new Intent(android.content.Intent.ACTION_SEND);
+                                share.setType("text/plain");
+                                share.putExtra(Intent.EXTRA_SUBJECT, "Check out: " + mPlaceName);
+                                share.putExtra(Intent.EXTRA_TEXT, url);
+                                startActivity(Intent.createChooser(share, "Share link!"));
+                            }
+                        });
+                    }
 
-                            Intent share = new Intent(android.content.Intent.ACTION_SEND);
-                            share.setType("text/plain");
-                            share.putExtra(Intent.EXTRA_SUBJECT, mPlaceName);
-                            share.putExtra(Intent.EXTRA_TEXT, url);
-                            startActivity(Intent.createChooser(share, "Share link!"));
-                        }
-                    });
-                }
-
+                    mTextViewReviewHeader.setVisibility(View.VISIBLE);
+                    mReviewLayout.setVisibility(View.VISIBLE);
 
                 do {
                     String reviewAuthor = cursor.getString(cursor.getColumnIndex(PlacesContract.PlaceReviewsEntry.COLUMN_AUTHOR_NAME));
@@ -391,6 +423,7 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
                     mReviewLayout.addView(v);
 
                 } while (cursor.moveToNext());
+                }
             }
         }
     }
@@ -400,11 +433,11 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
 
     }
 
-    public void setPlaceDetails(String placeId, String placeName, String photo_reference) {
+    public void setPlaceDetails(String placeId, String placeName, String photo_reference,String placeAddress) {
         mPlaceId = placeId;
         mPlaceName = placeName;
         mPhoto_reference = photo_reference;
-
+        mPlaceAddress = placeAddress;
     }
 
 
@@ -421,6 +454,7 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
         currentState.putString(ViewNearByFragment.PLACE_ID, mPlaceId);
         currentState.putString(ViewNearByFragment.PHOTO_REFERENCE, mPhoto_reference);
         currentState.putString(ViewNearByFragment.PLACE_NAME, mPlaceName);
+        currentState.putString(ViewNearByFragment.PLACE_Address, mPlaceAddress);
     }
 
     private void requestCallPhonePermission() {
@@ -430,5 +464,12 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
         if (hasPermission != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(permissions, REQUEST_CALL_PHONE);
         }
+    }
+    public void openPlaceDirection()
+    {
+        Uri uri = Uri.parse("geo:0,0?q=" + mPlaceAddress );
+        Intent intent = new Intent(Intent.ACTION_VIEW,uri);
+        if(intent.resolveActivity(getActivity().getPackageManager())!=null)
+            startActivity(intent);
     }
 }

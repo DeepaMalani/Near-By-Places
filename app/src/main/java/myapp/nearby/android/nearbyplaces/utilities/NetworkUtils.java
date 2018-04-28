@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,11 +43,8 @@ public final class NetworkUtils {
 
         Uri builtUri = Uri.parse(PLACES_BASE_URL).buildUpon()
                  .appendQueryParameter(LOCATION,location)
-               // .appendQueryParameter(LOCATION, "37.399470,-122.018095")
-                //.appendQueryParameter(LOCATION, "21.8312817,76.3388821")
-                //.appendQueryParameter(RANK_BY, "distance")
                 .appendQueryParameter("radius","5000")
-                  .appendQueryParameter(TYPE, type)
+                  //.appendQueryParameter(TYPE, type)
                  .appendQueryParameter(KEY_WORD, keyword)
                 .appendQueryParameter(API_KEY, BuildConfig.places_api_key)
                 .build();
@@ -60,7 +56,7 @@ public final class NetworkUtils {
             e.printStackTrace();
         }
 
-        Log.d(TAG,"Url: " + url);
+       // Log.d(TAG,"Url: " + url);
         return url;
     }
     public static URL buildUrlWithNextPageToken(String type,String keyword, String location,String nextPageToken) {
@@ -76,10 +72,8 @@ public final class NetworkUtils {
 
         Uri builtUri = Uri.parse(PLACES_BASE_URL).buildUpon()
                 .appendQueryParameter(LOCATION,location)
-               // .appendQueryParameter(LOCATION, "37.399470,-122.018095")
-               // .appendQueryParameter(LOCATION, "21.8312817,76.3388821")
                 .appendQueryParameter("radius","5000")
-                .appendQueryParameter(TYPE, type)
+               // .appendQueryParameter(TYPE, type)
                 .appendQueryParameter(KEY_WORD, keyword)
                 .appendQueryParameter(API_KEY, BuildConfig.places_api_key)
                 .appendQueryParameter(PAGE_TOKEN,nextPageToken)
@@ -92,7 +86,7 @@ public final class NetworkUtils {
             e.printStackTrace();
         }
 
-        Log.d(TAG,"Url: " + url);
+      //  Log.d(TAG,"Next Page Url: " + url);
         return url;
     }
     /**
@@ -173,7 +167,7 @@ public final class NetworkUtils {
             e.printStackTrace();
         }
 
-        Log.d(TAG,"PlaceDetailsUrl: " + url);
+       // Log.d(TAG,"PlaceDetailsUrl: " + url);
         return url;
     }
 
