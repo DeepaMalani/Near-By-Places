@@ -179,6 +179,7 @@ public class PlaceDetailsFragment extends Fragment implements LoaderManager.Load
         }
     }
 
+
     /**
      * This method will make the error message visible and hide the recipe list
      * View.
