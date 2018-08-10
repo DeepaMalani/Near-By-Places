@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar mLoadingIndicator;
 
     private static final String TAG = MainActivity.class.getSimpleName();
-  //  private static final int PERMISSIONS_REQUEST_COARSE_LOCATION = 111;
+
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
 
     public static String TITLE = "activity_title";
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
             mRecyclerView.setLayoutManager(gridLayoutManager);
         }
 
-        //RecipeAdapter is responsible for linking the data with recycler views
+        //PlacesTypeAdapter is responsible for linking the data with recycler views
         mPlacesTypeAdapter = new PlacesTypeAdapter(MainActivity.this, mPlaceTitles, mGridViewIcons, mPlaceType,mPlaceKeyword);
         //Attach adapter to recycler view
         mRecyclerView.setAdapter(mPlacesTypeAdapter);
@@ -420,8 +420,7 @@ public class MainActivity extends AppCompatActivity {
             mLoadingIndicator.setVisibility(View.INVISIBLE);
 
         }
-      //  else
-            // textView.setText("Location not found");
+
     }
 //
 //    /**
